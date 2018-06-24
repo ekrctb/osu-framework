@@ -2,6 +2,7 @@
 // Licensed under the MIT Licence - https://raw.githubusercontent.com/ppy/osu-framework/master/LICENCE
 
 using System.Collections.Generic;
+using osu.Framework.Input.EventArgs;
 using OpenTK.Input;
 
 namespace osu.Framework.Input
@@ -25,7 +26,7 @@ namespace osu.Framework.Input
 
         protected override ButtonStates<Key> GetButtonStates(InputState state) => state.Keyboard.Keys;
 
-        protected override void Handle(IInputStateChangeHandler handler, InputState state, Key key, ButtonStateChangeKind kind) =>
-            handler.HandleKeyboardKeyStateChange(state, key, kind);
+        protected override void Handle(IInputStateChangeHandler handler, ButtonStateChangeArgs<Key> args) =>
+            handler.HandleKeyboardKeyStateChange(args);
     }
 }

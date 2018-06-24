@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2007-2018 ppy Pty Ltd <contact@ppy.sh>.
 // Licensed under the MIT Licence - https://raw.githubusercontent.com/ppy/osu-framework/master/LICENCE
 
+using osu.Framework.Input.EventArgs;
 using OpenTK;
 
 namespace osu.Framework.Input
@@ -29,7 +30,7 @@ namespace osu.Framework.Input
                 mouse.LastScroll = mouse.Scroll;
                 mouse.Scroll += Delta;
                 mouse.HasPreciseScroll = IsPrecise;
-                handler.HandleMouseScrollChange(state);
+                handler.HandleMouseScrollChange(new MouseScrolChangeArgs(state, this, Delta, IsPrecise));
             }
         }
     }

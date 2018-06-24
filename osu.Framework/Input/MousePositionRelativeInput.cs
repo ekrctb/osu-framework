@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2007-2018 ppy Pty Ltd <contact@ppy.sh>.
 // Licensed under the MIT Licence - https://raw.githubusercontent.com/ppy/osu-framework/master/LICENCE
 
+using osu.Framework.Input.EventArgs;
 using OpenTK;
 
 namespace osu.Framework.Input
@@ -24,7 +25,7 @@ namespace osu.Framework.Input
             {
                 mouse.LastPosition = mouse.Position;
                 mouse.Position += Delta;
-                handler.HandleMousePositionChange(state);
+                handler.HandleMousePositionChange(new MousePositionChangeArgs(state, this, Delta));
             }
         }
     }

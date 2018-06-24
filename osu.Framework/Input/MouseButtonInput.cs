@@ -2,6 +2,7 @@
 // Licensed under the MIT Licence - https://raw.githubusercontent.com/ppy/osu-framework/master/LICENCE
 
 using System.Collections.Generic;
+using osu.Framework.Input.EventArgs;
 using OpenTK.Input;
 
 namespace osu.Framework.Input
@@ -25,7 +26,7 @@ namespace osu.Framework.Input
 
         protected override ButtonStates<MouseButton> GetButtonStates(InputState state) => state.Mouse.Buttons;
 
-        protected override void Handle(IInputStateChangeHandler handler, InputState state, MouseButton button, ButtonStateChangeKind kind) =>
-            handler.HandleMouseButtonStateChange(state, button, kind);
+        protected override void Handle(IInputStateChangeHandler handler, ButtonStateChangeArgs<MouseButton> args) =>
+            handler.HandleMouseButtonStateChange(args);
     }
 }

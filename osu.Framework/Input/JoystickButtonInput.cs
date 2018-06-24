@@ -2,6 +2,7 @@
 // Licensed under the MIT Licence - https://raw.githubusercontent.com/ppy/osu-framework/master/LICENCE
 
 using System.Collections.Generic;
+using osu.Framework.Input.EventArgs;
 
 namespace osu.Framework.Input
 {
@@ -24,7 +25,7 @@ namespace osu.Framework.Input
 
         protected override ButtonStates<JoystickButton> GetButtonStates(InputState state) => state.Joystick.Buttons;
 
-        protected override void Handle(IInputStateChangeHandler handler, InputState state, JoystickButton button, ButtonStateChangeKind kind) =>
-            handler.HandleJoystickButtonStateChange(state, button, kind);
+        protected override void Handle(IInputStateChangeHandler handler, ButtonStateChangeArgs<JoystickButton> args) =>
+            handler.HandleJoystickButtonStateChange(args);
     }
 }

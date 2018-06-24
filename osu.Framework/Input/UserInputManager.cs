@@ -2,6 +2,7 @@
 // Licensed under the MIT Licence - https://raw.githubusercontent.com/ppy/osu-framework/master/LICENCE
 
 using System.Collections.Generic;
+using osu.Framework.Input.EventArgs;
 using osu.Framework.Input.Handlers;
 using osu.Framework.Platform;
 using OpenTK;
@@ -19,19 +20,24 @@ namespace osu.Framework.Input
             UseParentInput = false;
         }
 
-        public override void HandleMousePositionChange(InputState state)
+        public override void HandleMousePositionChange(MousePositionChangeArgs args)
         {
-            var mouse = state.Mouse;
+            var mouse = args.State.Mouse;
             // confine cursor
             if (Host.Window != null && (Host.Window.CursorState & CursorState.Confined) > 0)
+            {
+                var position = mouse.Position;
                 mouse.Position = Vector2.Clamp(mouse.Position, Vector2.Zero, new Vector2(Host.Window.Width, Host.Window.Height));
-            base.HandleMousePositionChange(state);
+                args = new MousePositionChangeArgs(args.State, args.Input, args.Delta + (mouse.Position - position));
+            }
+
+            base.HandleMousePositionChange(args);
         }
 
-        public override void HandleMouseScrollChange(InputState state)
+        public override void HandleMouseScrollChange(MouseScrolChangeArgs args)
         {
             if (Host.Window != null && !Host.Window.CursorInWindow) return;
-            base.HandleMouseScrollChange(state);
+            base.HandleMouseScrollChange(args);
         }
     }
 }

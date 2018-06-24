@@ -7,6 +7,7 @@ using System.Linq;
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
+using osu.Framework.Input.EventArgs;
 using osu.Framework.Input.Handlers;
 using osu.Framework.Logging;
 using osu.Framework.Platform;
@@ -364,65 +365,65 @@ namespace osu.Framework.Input
                                      || k == Key.LWin || k == Key.RWin;
         }
 
-        public virtual void HandleKeyboardKeyStateChange(InputState state, Key key, ButtonStateChangeKind kind)
+        public virtual void HandleKeyboardKeyStateChange(ButtonStateChangeArgs<Key> args)
         {
-            if (kind == ButtonStateChangeKind.Pressed)
+            if (args.Kind == ButtonStateChangeKind.Pressed)
             {
-                handleKeyDown(state, key, false);
+                handleKeyDown(args.State, args.Button, false);
 
-                if (!isModifierKey(key))
+                if (!isModifierKey(args.Button))
                 {
-                    keyboardRepeatKey = key;
+                    keyboardRepeatKey = args.Button;
                     keyboardRepeatTime = repeat_initial_delay;
                 }
             }
             else
             {
-                handleKeyUp(state, key);
+                handleKeyUp(args.State, args.Button);
 
                 keyboardRepeatKey = null;
                 keyboardRepeatTime = 0;
             }
         }
 
-        public virtual void HandleJoystickButtonStateChange(InputState state, JoystickButton button, ButtonStateChangeKind kind)
+        public virtual void HandleJoystickButtonStateChange(ButtonStateChangeArgs<JoystickButton> args)
         {
-            if (kind == ButtonStateChangeKind.Pressed)
+            if (args.Kind == ButtonStateChangeKind.Pressed)
             {
-                handleJoystickPress(state, button);
+                handleJoystickPress(args.State, args.Button);
             }
             else
             {
-                handleJoystickRelease(state, button);
+                handleJoystickRelease(args.State, args.Button);
             }
         }
 
-        public virtual void HandleMousePositionChange(InputState state)
+        public virtual void HandleMousePositionChange(MousePositionChangeArgs args)
         {
-            var mouse = state.Mouse;
+            var mouse = args.State.Mouse;
 
             foreach (var h in InputHandlers)
                 if (h.Enabled && h is INeedsMousePositionFeedback handler)
                     handler.FeedbackMousePositionChange(mouse.Position);
 
-            handleMouseMove(state);
+            handleMouseMove(args.State);
 
             foreach (var manager in mouseButtonEventManagers.Values)
-                manager.HandlePositionChange(state);
+                manager.HandlePositionChange(args.State);
         }
 
-        public virtual void HandleMouseScrollChange(InputState state)
+        public virtual void HandleMouseScrollChange(MouseScrolChangeArgs args)
         {
-            handleScroll(state);
+            handleScroll(args.State);
         }
 
-        public void HandleMouseButtonStateChange(InputState state, MouseButton button, ButtonStateChangeKind kind)
+        public virtual void HandleMouseButtonStateChange(ButtonStateChangeArgs<MouseButton> args)
         {
-            if (mouseButtonEventManagers.TryGetValue(button, out var manager))
-                manager.HandleButtonStateChange(state, kind, Time.Current);
+            if (mouseButtonEventManagers.TryGetValue(args.Button, out var manager))
+                manager.HandleButtonStateChange(args.State, args.Kind, Time.Current);
         }
 
-        public virtual void HandleCustomInput(InputState state, IInput input)
+        public virtual void HandleCustomInput(InputStateChangeArgs args)
         {
         }
 

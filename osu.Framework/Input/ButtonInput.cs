@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using osu.Framework.Input.EventArgs;
 
 namespace osu.Framework.Input
 {
@@ -57,10 +58,8 @@ namespace osu.Framework.Input
         /// This can be used to invoke the <see cref="IInputStateChangeHandler"/>'s HandleXXXStateChange methods.
         /// </summary>
         /// <param name="handler">The <see cref="IInputStateChangeHandler"/> that should handle the <see cref="InputState"/> change.</param>
-        /// <param name="state">The <see cref="InputState"/> which changed.</param>
-        /// <param name="button">The <see cref="TButton"/> that changed.</param>
-        /// <param name="kind">The type of change that occurred on <paramref name="button"/>.</param>
-        protected abstract void Handle(IInputStateChangeHandler handler, InputState state, TButton button, ButtonStateChangeKind kind);
+        /// <param name="args">The <see cref="ButtonStateChangeArgs{TButton}"/>.</param>
+        protected abstract void Handle(IInputStateChangeHandler handler, ButtonStateChangeArgs<TButton> args);
 
         public void Apply(InputState state, IInputStateChangeHandler handler)
         {
@@ -69,7 +68,8 @@ namespace osu.Framework.Input
             {
                 if (buttonStates.SetPressed(entry.Button, entry.IsPressed))
                 {
-                    Handle(handler, state, entry.Button, entry.IsPressed ? ButtonStateChangeKind.Pressed : ButtonStateChangeKind.Released);
+                    var kind = entry.IsPressed ? ButtonStateChangeKind.Pressed : ButtonStateChangeKind.Released;
+                    Handle(handler, new ButtonStateChangeArgs<TButton>(state, this, entry.Button, kind));
                 }
             }
         }
