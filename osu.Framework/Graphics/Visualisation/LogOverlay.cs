@@ -8,11 +8,11 @@ using OpenTK;
 using OpenTK.Graphics;
 using osu.Framework.Allocation;
 using osu.Framework.Configuration;
+using osu.Framework.EventArgs;
 using osu.Framework.Input;
 using osu.Framework.Timing;
 using OpenTK.Input;
 using osu.Framework.Graphics.Shapes;
-using osu.Framework.Input.EventArgs;
 
 namespace osu.Framework.Graphics.Visualisation
 {

@@ -3,11 +3,11 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using osu.Framework.EventArgs;
 using osu.Framework.Graphics;
-using osu.Framework.Input.EventArgs;
 using OpenTK;
 using OpenTK.Input;
-using MouseMoveEventArgs = osu.Framework.Input.EventArgs.MouseMoveEventArgs;
+using MouseMoveEventArgs = osu.Framework.EventArgs.MouseMoveEventArgs;
 
 namespace osu.Framework.Input
 {

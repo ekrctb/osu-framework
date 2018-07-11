@@ -8,7 +8,7 @@ using osu.Framework.Input;
 using OpenTK.Input;
 using OpenTK;
 using System.Diagnostics;
-using osu.Framework.Input.EventArgs;
+using osu.Framework.EventArgs;
 
 namespace osu.Framework.Graphics.UserInterface
 {

@@ -3,8 +3,9 @@
 
 using System;
 using JetBrains.Annotations;
+using osu.Framework.Input;
 
-namespace osu.Framework.Input.EventArgs
+namespace osu.Framework.EventArgs
 {
     /// <summary>
     /// Denotes information of input event.

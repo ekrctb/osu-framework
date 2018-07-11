@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using osu.Framework.EventArgs;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Sprites;
 using osu.Framework.Graphics.UserInterface;
@@ -10,7 +11,6 @@ using osu.Framework.Input;
 using OpenTK;
 using OpenTK.Graphics;
 using osu.Framework.Graphics.Shapes;
-using osu.Framework.Input.EventArgs;
 
 namespace osu.Framework.Graphics.Visualisation
 {

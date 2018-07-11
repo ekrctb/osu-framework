@@ -19,7 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using osu.Framework.Input.EventArgs;
+using osu.Framework.EventArgs;
 
 namespace osu.Framework.Graphics.Performance
 {

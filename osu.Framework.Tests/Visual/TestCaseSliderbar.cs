@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Generic;
 using osu.Framework.Configuration;
+using osu.Framework.EventArgs;
 using osu.Framework.Graphics.Sprites;
 using osu.Framework.Graphics.UserInterface;
 using osu.Framework.Input;
-using osu.Framework.Input.EventArgs;
 using osu.Framework.Testing;
 using OpenTK;
 using OpenTK.Graphics;

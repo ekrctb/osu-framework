@@ -3,9 +3,10 @@
 
 using JetBrains.Annotations;
 using osu.Framework.Graphics;
+using osu.Framework.Input;
 using OpenTK;
 
-namespace osu.Framework.Input.EventArgs
+namespace osu.Framework.EventArgs
 {
     /// <summary>
     /// Denotes information of input event with positions represented in a local choordinate.

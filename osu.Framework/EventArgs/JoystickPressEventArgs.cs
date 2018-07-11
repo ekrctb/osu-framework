@@ -1,13 +1,13 @@
 ﻿// Copyright (c) 2007-2018 ppy Pty Ltd <contact@ppy.sh>.
 // Licensed under the MIT Licence - https://raw.githubusercontent.com/ppy/osu-framework/master/LICENCE
 
-using OpenTK.Input;
+using osu.Framework.Input;
 
-namespace osu.Framework.Input.EventArgs
+namespace osu.Framework.EventArgs
 {
-    public class DragStartEventArgs : MouseButtonEventArgs
+    public class JoystickPressEventArgs : JoystickButtonEventArgs
     {
-        public DragStartEventArgs(InputState state, MouseButton button)
+        public JoystickPressEventArgs(InputState state, JoystickButton button)
             : base(state, button)
         {
         }

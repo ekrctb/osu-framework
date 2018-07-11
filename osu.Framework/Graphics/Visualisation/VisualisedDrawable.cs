@@ -11,8 +11,8 @@ using osu.Framework.Extensions.Color4Extensions;
 using OpenTK.Input;
 using osu.Framework.Graphics.Shapes;
 using System.Collections.Generic;
+using osu.Framework.EventArgs;
 using osu.Framework.Extensions.IEnumerableExtensions;
-using osu.Framework.Input.EventArgs;
 
 namespace osu.Framework.Graphics.Visualisation
 {

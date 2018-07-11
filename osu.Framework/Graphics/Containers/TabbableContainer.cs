@@ -3,8 +3,8 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using osu.Framework.EventArgs;
 using osu.Framework.Input;
-using osu.Framework.Input.EventArgs;
 using OpenTK.Input;
 
 namespace osu.Framework.Graphics.Containers

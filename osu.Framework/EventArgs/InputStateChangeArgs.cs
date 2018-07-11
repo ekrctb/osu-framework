@@ -2,8 +2,9 @@
 // Licensed under the MIT Licence - https://raw.githubusercontent.com/ppy/osu-framework/master/LICENCE
 
 using JetBrains.Annotations;
+using osu.Framework.Input;
 
-namespace osu.Framework.Input.EventArgs
+namespace osu.Framework.EventArgs
 {
     /// <summary>
     /// Denotes information of input event.

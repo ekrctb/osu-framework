@@ -4,12 +4,12 @@
 using System;
 using osu.Framework.Allocation;
 using osu.Framework.Configuration;
+using osu.Framework.EventArgs;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.Sprites;
 using osu.Framework.Input;
-using osu.Framework.Input.EventArgs;
 using osu.Framework.Input.Handlers.Mouse;
 using osu.Framework.Testing;
 using OpenTK;

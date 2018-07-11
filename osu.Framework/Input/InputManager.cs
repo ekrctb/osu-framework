@@ -5,17 +5,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using osu.Framework.Allocation;
+using osu.Framework.EventArgs;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
-using osu.Framework.Input.EventArgs;
 using osu.Framework.Input.Handlers;
 using osu.Framework.Logging;
 using osu.Framework.Platform;
 using osu.Framework.Statistics;
 using OpenTK;
 using OpenTK.Input;
-using JoystickButtonEventArgs = osu.Framework.Input.EventArgs.JoystickButtonEventArgs;
-using MouseMoveEventArgs = osu.Framework.Input.EventArgs.MouseMoveEventArgs;
+using JoystickButtonEventArgs = osu.Framework.EventArgs.JoystickButtonEventArgs;
+using MouseMoveEventArgs = osu.Framework.EventArgs.MouseMoveEventArgs;
 
 namespace osu.Framework.Input
 {

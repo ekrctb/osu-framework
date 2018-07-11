@@ -5,18 +5,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+using osu.Framework.EventArgs;
 using osu.Framework.Extensions.Color4Extensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.Sprites;
 using osu.Framework.Input;
-using osu.Framework.Input.EventArgs;
 using osu.Framework.Testing;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Input;
-using MouseDownEventArgs = osu.Framework.Input.EventArgs.MouseDownEventArgs;
+using MouseDownEventArgs = osu.Framework.EventArgs.MouseDownEventArgs;
 using osu.Framework.MathUtils;
 
 namespace osu.Framework.Tests.Visual

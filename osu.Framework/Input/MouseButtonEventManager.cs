@@ -9,7 +9,7 @@ using OpenTK.Input;
 using System.Linq;
 using System.Diagnostics;
 using NUnit.Framework;
-using osu.Framework.Input.EventArgs;
+using osu.Framework.EventArgs;
 using osu.Framework.Logging;
 
 namespace osu.Framework.Input

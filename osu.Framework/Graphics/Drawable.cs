@@ -26,9 +26,9 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using osu.Framework.Development;
-using osu.Framework.Input.EventArgs;
+using osu.Framework.EventArgs;
 using osu.Framework.MathUtils;
-using MouseMoveEventArgs = osu.Framework.Input.EventArgs.MouseMoveEventArgs;
+using MouseMoveEventArgs = osu.Framework.EventArgs.MouseMoveEventArgs;
 
 namespace osu.Framework.Graphics
 {

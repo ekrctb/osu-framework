@@ -2,9 +2,10 @@
 // Licensed under the MIT Licence - https://raw.githubusercontent.com/ppy/osu-framework/master/LICENCE
 
 
+using osu.Framework.Input;
 using OpenTK.Input;
 
-namespace osu.Framework.Input.EventArgs
+namespace osu.Framework.EventArgs
 {
     public class KeyboardEventArgs : InputEventArgs
     {
