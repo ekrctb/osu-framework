@@ -19,7 +19,7 @@ namespace osu.Framework.Input
         /// <summary>
         /// Handles a change of mouse scroll.
         /// </summary>
-        void HandleMouseScrollChange(MouseScrolChangeArgs args);
+        void HandleMouseScrollChange(MouseScrollChangeArgs args);
 
         /// <summary>
         /// Handles a change of mouse button state.
@@ -35,10 +35,5 @@ namespace osu.Framework.Input
         /// Handles a change of joystick button state.
         /// </summary>
         void HandleJoystickButtonStateChange(ButtonStateChangeArgs<JoystickButton> args);
-
-        /// <summary>
-        /// Handles a change of things other than mouse, keyboard and joystick.
-        /// </summary>
-        void HandleCustomInput(InputStateChangeArgs args);
     }
 }

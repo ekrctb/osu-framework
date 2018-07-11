@@ -25,11 +25,11 @@ namespace osu.Framework.Input
             var mouse = state.Mouse;
             if (!mouse.IsPositionValid || mouse.Position != Position)
             {
-                var delta = !mouse.IsPositionValid ? Vector2.Zero : Position - mouse.Position;
+                var lastPosition = !mouse.IsPositionValid ? Position : mouse.Position;
                 mouse.IsPositionValid = true;
                 mouse.LastPosition = mouse.Position;
                 mouse.Position = Position;
-                handler.HandleMousePositionChange(new MousePositionChangeArgs(state, this, delta));
+                handler.HandleMousePositionChange(new MousePositionChangeArgs(state, this, lastPosition));
             }
         }
     }

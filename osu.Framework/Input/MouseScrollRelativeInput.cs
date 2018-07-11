@@ -27,10 +27,11 @@ namespace osu.Framework.Input
             var mouse = state.Mouse;
             if (Delta != Vector2.Zero)
             {
+                var lastScroll = mouse.LastScroll;
                 mouse.LastScroll = mouse.Scroll;
                 mouse.Scroll += Delta;
                 mouse.HasPreciseScroll = IsPrecise;
-                handler.HandleMouseScrollChange(new MouseScrolChangeArgs(state, this, Delta, IsPrecise));
+                handler.HandleMouseScrollChange(new MouseScrollChangeArgs(state, this, lastScroll, IsPrecise));
             }
         }
     }

@@ -1,29 +1,23 @@
 // Copyright (c) 2007-2018 ppy Pty Ltd <contact@ppy.sh>.
 // Licensed under the MIT Licence - https://raw.githubusercontent.com/ppy/osu-framework/master/LICENCE
 
-using System;
 using JetBrains.Annotations;
 
 namespace osu.Framework.Input.EventArgs
 {
     /// <summary>
-    /// Denotes information of input state change.
+    /// Denotes information of input event.
     /// </summary>
-    public class InputStateChangeArgs
+    public class InputStateChangeArgs : EventArgsBase
     {
         /// <summary>
-        /// The current input state.
+        /// An <see cref="IInput"/> that caused this input state change.
         /// </summary>
-        [NotNull] public readonly InputState State;
+        [NotNull] public readonly IInput Input;
 
-        /// <summary>
-        /// The <see cref="IInput"/> that caused this input state change.
-        /// </summary>
-        [CanBeNull] public readonly IInput Input;
-
-        public InputStateChangeArgs([NotNull] InputState state, [CanBeNull] IInput input)
+        public InputStateChangeArgs(InputState state, IInput input)
+            : base(state)
         {
-            State = state ?? throw new ArgumentNullException(nameof(state));
             Input = input;
         }
     }

@@ -23,9 +23,10 @@ namespace osu.Framework.Input
             var mouse = state.Mouse;
             if (mouse.IsPositionValid && Delta != Vector2.Zero)
             {
+                var lastPosition = mouse.Position;
                 mouse.LastPosition = mouse.Position;
                 mouse.Position += Delta;
-                handler.HandleMousePositionChange(new MousePositionChangeArgs(state, this, Delta));
+                handler.HandleMousePositionChange(new MousePositionChangeArgs(state, this, lastPosition));
             }
         }
     }

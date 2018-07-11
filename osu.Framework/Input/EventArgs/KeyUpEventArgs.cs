@@ -3,10 +3,13 @@
 
 using OpenTK.Input;
 
-namespace osu.Framework.Input
+namespace osu.Framework.Input.EventArgs
 {
-    public class KeyUpEventArgs
+    public class KeyUpEventArgs : KeyboardEventArgs
     {
-        public Key Key;
+        public KeyUpEventArgs(InputState state, Key key)
+            : base(state, key)
+        {
+        }
     }
 }

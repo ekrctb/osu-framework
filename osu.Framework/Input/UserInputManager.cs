@@ -26,15 +26,13 @@ namespace osu.Framework.Input
             // confine cursor
             if (Host.Window != null && (Host.Window.CursorState & CursorState.Confined) > 0)
             {
-                var position = mouse.Position;
                 mouse.Position = Vector2.Clamp(mouse.Position, Vector2.Zero, new Vector2(Host.Window.Width, Host.Window.Height));
-                args = new MousePositionChangeArgs(args.State, args.Input, args.Delta + (mouse.Position - position));
             }
 
             base.HandleMousePositionChange(args);
         }
 
-        public override void HandleMouseScrollChange(MouseScrolChangeArgs args)
+        public override void HandleMouseScrollChange(MouseScrollChangeArgs args)
         {
             if (Host.Window != null && !Host.Window.CursorInWindow) return;
             base.HandleMouseScrollChange(args);

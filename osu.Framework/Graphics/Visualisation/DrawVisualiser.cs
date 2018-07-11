@@ -5,6 +5,7 @@ using System.Linq;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Cursor;
 using osu.Framework.Input;
+using osu.Framework.Input.EventArgs;
 
 namespace osu.Framework.Graphics.Visualisation
 {

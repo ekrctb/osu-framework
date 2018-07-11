@@ -4,8 +4,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using osu.Framework.Graphics;
+using osu.Framework.Input.EventArgs;
 using OpenTK;
 using OpenTK.Input;
+using MouseMoveEventArgs = osu.Framework.Input.EventArgs.MouseMoveEventArgs;
 
 namespace osu.Framework.Input
 {
@@ -76,14 +78,14 @@ namespace osu.Framework.Input
             return pendingInputs;
         }
 
-        protected override bool OnMouseMove(InputState state)
+        protected override bool OnMouseMove(MouseMoveEventArgs args)
         {
             if (UseParentInput)
-                new MousePositionAbsoluteInput { Position = state.Mouse.NativeState.Position }.Apply(CurrentState, this);
+                new MousePositionAbsoluteInput { Position = args.State.Mouse.Position }.Apply(CurrentState, this);
             return false;
         }
 
-        protected override bool OnMouseDown(InputState state, MouseDownEventArgs args)
+        protected override bool OnMouseDown(MouseDownEventArgs args)
         {
             if (UseParentInput)
             {
@@ -94,7 +96,7 @@ namespace osu.Framework.Input
             return false;
         }
 
-        protected override bool OnMouseUp(InputState state, MouseUpEventArgs args)
+        protected override bool OnMouseUp(MouseUpEventArgs args)
         {
             if (UseParentInput)
             {
@@ -106,34 +108,34 @@ namespace osu.Framework.Input
             return false;
         }
 
-        protected override bool OnScroll(InputState state)
+        protected override bool OnScroll(ScrollEventArgs args)
         {
             if (UseParentInput)
-                new MouseScrollRelativeInput { Delta = state.Mouse.NativeState.ScrollDelta, IsPrecise = state.Mouse.HasPreciseScroll }.Apply(CurrentState, this);
+                new MouseScrollRelativeInput { Delta = args.ScrollDelta, IsPrecise = args.IsPrecise }.Apply(CurrentState, this);
             return false;
         }
 
-        protected override bool OnKeyDown(InputState state, KeyDownEventArgs args)
+        protected override bool OnKeyDown(KeyDownEventArgs args)
         {
-            if (UseParentInput) SyncInputState(state);
+            if (UseParentInput) SyncInputState(args.State);
             return false;
         }
 
-        protected override bool OnKeyUp(InputState state, KeyUpEventArgs args)
+        protected override bool OnKeyUp(KeyUpEventArgs args)
         {
-            if (UseParentInput) SyncInputState(state);
+            if (UseParentInput) SyncInputState(args.State);
             return false;
         }
 
-        protected override bool OnJoystickPress(InputState state, JoystickEventArgs args)
+        protected override bool OnJoystickPress(JoystickPressEventArgs args)
         {
-            if (UseParentInput) SyncInputState(state);
+            if (UseParentInput) SyncInputState(args.State);
             return false;
         }
 
-        protected override bool OnJoystickRelease(InputState state, JoystickEventArgs args)
+        protected override bool OnJoystickRelease(JoystickReleaseEventArgs args)
         {
-            if (UseParentInput) SyncInputState(state);
+            if (UseParentInput) SyncInputState(args.State);
             return false;
         }
 

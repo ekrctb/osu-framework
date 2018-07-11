@@ -7,6 +7,7 @@ using System.Linq;
 using osu.Framework.Extensions.IEnumerableExtensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
+using osu.Framework.Input.EventArgs;
 using osu.Framework.Logging;
 using OpenTK;
 
@@ -114,9 +115,9 @@ namespace osu.Framework.Input.Bindings
 
         protected override bool OnKeyUp(InputState state, KeyUpEventArgs args) => handleNewReleased(state, KeyCombination.FromKey(args.Key));
 
-        protected override bool OnJoystickPress(InputState state, JoystickEventArgs args) => handleNewPressed(state, KeyCombination.FromJoystickButton(args.Button), false);
+        protected override bool OnJoystickPress(InputState state, JoystickButtonEventArgs args) => handleNewPressed(state, KeyCombination.FromJoystickButton(args.Button), false);
 
-        protected override bool OnJoystickRelease(InputState state, JoystickEventArgs args) => handleNewReleased(state, KeyCombination.FromJoystickButton(args.Button));
+        protected override bool OnJoystickRelease(InputState state, JoystickButtonEventArgs args) => handleNewReleased(state, KeyCombination.FromJoystickButton(args.Button));
 
         private bool handleNewPressed(InputState state, InputKey newKey, bool repeat, Vector2? scrollDelta = null, bool isPrecise = false)
         {

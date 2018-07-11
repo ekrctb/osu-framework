@@ -11,11 +11,12 @@ using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.Sprites;
 using osu.Framework.Input;
+using osu.Framework.Input.EventArgs;
 using osu.Framework.Testing;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Input;
-using MouseEventArgs = osu.Framework.Input.MouseEventArgs;
+using MouseDownEventArgs = osu.Framework.Input.EventArgs.MouseDownEventArgs;
 using osu.Framework.MathUtils;
 
 namespace osu.Framework.Tests.Visual
@@ -471,7 +472,7 @@ namespace osu.Framework.Tests.Visual
             public class EventCounter : CompositeDrawable
             {
                 public InputState LastState;
-                public MouseEventArgs LastArgs;
+                public MouseDownEventArgs LastArgs;
 
                 private int count;
                 private readonly SpriteText text;
@@ -501,7 +502,7 @@ namespace osu.Framework.Tests.Visual
                     LastState = null;
                 }
 
-                public bool NewState(InputState state, MouseEventArgs args = null)
+                public bool NewState(InputState state, MouseDownEventArgs args = null)
                 {
                     LastState = state.Clone();
                     LastArgs = args;
