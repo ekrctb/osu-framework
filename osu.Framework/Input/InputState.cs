@@ -1,21 +1,21 @@
 // Copyright (c) 2007-2018 ppy Pty Ltd <contact@ppy.sh>.
 // Licensed under the MIT Licence - https://raw.githubusercontent.com/ppy/osu-framework/master/LICENCE
 
+using JetBrains.Annotations;
+
 namespace osu.Framework.Input
 {
     public class InputState
     {
-        public IKeyboardState Keyboard;
-        public IMouseState Mouse;
-        public IJoystickState Joystick;
+        [NotNull] public KeyboardState Keyboard;
+        [NotNull] public MouseState Mouse;
+        [NotNull] public JoystickState Joystick;
 
-        public virtual InputState Clone()
+        public InputState()
         {
-            var clone = (InputState)MemberwiseClone();
-            clone.Keyboard = Keyboard?.Clone();
-            clone.Mouse = Mouse?.Clone();
-            clone.Joystick = Joystick?.Clone();
-            return clone;
+            Keyboard = new KeyboardState();
+            Mouse = new MouseState();
+            Joystick = new JoystickState();
         }
     }
 }

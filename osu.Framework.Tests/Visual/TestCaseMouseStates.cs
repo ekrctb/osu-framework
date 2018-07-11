@@ -367,12 +367,12 @@ namespace osu.Framework.Tests.Visual
         }
 
         private void checkLastPositionDelta(Func<float> expected) => AddAssert("correct position delta", () =>
-            s1.CounterFor("Move").LastState.Mouse.NativeState.Delta.Length == expected() &&
-            s2.CounterFor("Move").LastState.Mouse.NativeState.Delta.Length == expected());
+            s1.CounterFor("Move").LastDelta.Length == expected() &&
+            s2.CounterFor("Move").LastDelta.Length == expected());
 
         private void checkLastScrollDelta(Vector2 expected) => AddAssert("correct scroll delta", () =>
-            Precision.AlmostEquals(s1.CounterFor("Scroll").LastState.Mouse.ScrollDelta, expected) &&
-            Precision.AlmostEquals(s2.CounterFor("Scroll").LastState.Mouse.ScrollDelta, expected));
+            Precision.AlmostEquals(s1.CounterFor("Scroll").LastScrollDelta, expected) &&
+            Precision.AlmostEquals(s2.CounterFor("Scroll").LastScrollDelta, expected));
 
         private void checkIsDragged(bool isDragged) => AddAssert(isDragged ? "dragged" : "not dragged", () => s2.IsDragged == isDragged);
 
@@ -415,23 +415,23 @@ namespace osu.Framework.Tests.Visual
                 };
             }
 
-            protected override bool OnScroll(ScrollEventArgs args) => CounterFor("Scroll").NewState(args.State);
-            protected override bool OnMouseMove(MouseMoveEventArgs args) => CounterFor("Move").NewState(args.State);
-            protected override bool OnDragStart(DragStartEventArgs args) => CounterFor("DragStart").NewState(args.State);
-            protected override bool OnDragEnd(DragEndEventArgs args) => CounterFor("DragEnd").NewState(args.State);
+            protected override bool OnScroll(ScrollEventArgs args) => CounterFor("Scroll").NewState(args);
+            protected override bool OnMouseMove(MouseMoveEventArgs args) => CounterFor("Move").NewState(args);
+            protected override bool OnDragStart(DragStartEventArgs args) => CounterFor("DragStart").NewState(args);
+            protected override bool OnDragEnd(DragEndEventArgs args) => CounterFor("DragEnd").NewState(args);
 
-            protected override bool OnMouseDown(MouseDownEventArgs args) => CounterFor("MouseDown").NewState(args.State, args);
-            protected override bool OnMouseUp(MouseUpEventArgs args) => CounterFor("MouseUp").NewState(args.State, args);
+            protected override bool OnMouseDown(MouseDownEventArgs args) => CounterFor("MouseDown").NewState(args);
+            protected override bool OnMouseUp(MouseUpEventArgs args) => CounterFor("MouseUp").NewState(args);
 
             protected override bool OnClick(ClickEventArgs args)
             {
-                CounterFor("Click").NewState(args.State);
+                CounterFor("Click").NewState(args);
                 return true;
             }
 
             protected override bool OnDoubleClick(DoubleClickEventArgs args)
             {
-                CounterFor("DoubleClick").NewState(args.State);
+                CounterFor("DoubleClick").NewState(args);
                 return true;
             }
 
@@ -472,8 +472,8 @@ namespace osu.Framework.Tests.Visual
 
             public class EventCounter : CompositeDrawable
             {
-                public InputState LastState;
-                public InputEventArgs LastArgs;
+                public Vector2 LastDelta;
+                public Vector2 LastScrollDelta;
 
                 private int count;
                 private readonly SpriteText text;
@@ -500,14 +500,19 @@ namespace osu.Framework.Tests.Visual
                 public void Reset()
                 {
                     Count = 0;
-                    LastState = null;
+                    LastDelta = Vector2.Zero;
+                    LastScrollDelta = Vector2.Zero;
                 }
 
-                public bool NewState(InputState state, InputEventArgs args = null)
+                public bool NewState(InputEventArgs args)
                 {
-                    LastState = state.Clone();
-                    LastArgs = args;
                     Count++;
+
+                    if (args is MouseMoveEventArgs mouseMove)
+                        LastDelta = mouseMove.ScreenMousePosition - mouseMove.ScreenLastMousePosition;
+
+                    if (args is ScrollEventArgs scroll)
+                        LastScrollDelta = scroll.ScrollDelta;
 
                     return false;
                 }

@@ -4,10 +4,8 @@
 using System;
 using osu.Framework.Configuration;
 using osu.Framework.Graphics.Containers;
-using osu.Framework.Input;
 using OpenTK.Input;
 using OpenTK;
-using System.Diagnostics;
 using osu.Framework.EventArgs;
 
 namespace osu.Framework.Graphics.UserInterface
@@ -87,24 +85,19 @@ namespace osu.Framework.Graphics.UserInterface
 
         protected override bool OnClick(ClickEventArgs args)
         {
-            handleMouseInput(args.State);
+            handleMouseInput(args);
             return true;
         }
 
         protected override bool OnDrag(DragEventArgs args)
         {
-            handleMouseInput(args.State);
+            handleMouseInput(args);
             return true;
         }
 
         protected override bool OnDragStart(DragStartEventArgs args)
         {
-            var state = args.State;
-            Trace.Assert(state.Mouse.PositionMouseDown.HasValue,
-                $@"Can not start a {nameof(SliderBar<T>)} drag without knowing the mouse down position.");
-
-            // ReSharper disable once PossibleInvalidOperationException
-            Vector2 posDiff = state.Mouse.PositionMouseDown.Value - state.Mouse.Position;
+            Vector2 posDiff = args.MouseDownPosition - args.MousePosition;
 
             return Math.Abs(posDiff.X) > Math.Abs(posDiff.Y);
         }
@@ -134,12 +127,12 @@ namespace osu.Framework.Graphics.UserInterface
             }
         }
 
-        private void handleMouseInput(InputState state)
+        private void handleMouseInput(InputEventArgs args)
         {
-            var xPosition = ToLocalSpace(state?.Mouse.NativeState.Position ?? Vector2.Zero).X - RangePadding;
+            var xPosition = ToLocalSpace(args.ScreenMousePosition).X - RangePadding;
 
             if (!CurrentNumber.Disabled)
-                CurrentNumber.SetProportional(xPosition / UsableWidth, state != null && state.Keyboard.ShiftPressed ? KeyboardStep : 0);
+                CurrentNumber.SetProportional(xPosition / UsableWidth, args.State.Keyboard.ShiftPressed ? KeyboardStep : 0);
 
             OnUserChange();
         }

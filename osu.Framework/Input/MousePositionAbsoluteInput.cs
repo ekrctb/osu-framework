@@ -27,7 +27,6 @@ namespace osu.Framework.Input
             {
                 var lastPosition = !mouse.IsPositionValid ? Position : mouse.Position;
                 mouse.IsPositionValid = true;
-                mouse.LastPosition = mouse.Position;
                 mouse.Position = Position;
                 handler.HandleMousePositionChange(new MousePositionChangeArgs(state, this, lastPosition));
             }

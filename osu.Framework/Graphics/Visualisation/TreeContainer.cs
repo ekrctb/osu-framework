@@ -208,7 +208,7 @@ namespace osu.Framework.Graphics.Visualisation
             base.OnHoverLost(args);
         }
 
-        protected override bool OnDragStart(DragStartEventArgs args) => titleBar.ReceiveMouseInputAt(args.State.Mouse.NativeState.Position);
+        protected override bool OnDragStart(DragStartEventArgs args) => titleBar.ReceiveMouseInputAt(args.ScreenMousePosition);
 
         protected override bool OnDrag(DragEventArgs args)
         {

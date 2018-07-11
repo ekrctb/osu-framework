@@ -6,6 +6,7 @@ using osu.Framework.EventArgs;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Cursor;
 using osu.Framework.Input;
+using OpenTK;
 
 namespace osu.Framework.Graphics.Visualisation
 {
@@ -110,7 +111,7 @@ namespace osu.Framework.Graphics.Visualisation
             targetSearching = true;
         }
 
-        private Drawable findTargetIn(Drawable d, InputState state)
+        private Drawable findTargetIn(Drawable d, Vector2 screenMousePosition)
         {
             if (d is DrawVisualiser) return null;
             if (d is CursorContainer) return null;
@@ -118,11 +119,11 @@ namespace osu.Framework.Graphics.Visualisation
 
             if (!d.IsPresent) return null;
 
-            bool containsCursor = d.ScreenSpaceDrawQuad.Contains(state.Mouse.NativeState.Position);
+            bool containsCursor = d.ScreenSpaceDrawQuad.Contains(screenMousePosition);
             // This is an optimization: We don't need to consider drawables which we don't hover, and which do not
             // forward input further to children (via d.ReceiveMouseInputAt). If they do forward input to children, then there
             // is a good chance they have children poking out of their bounds, which we need to catch.
-            if (!containsCursor && !d.ReceiveMouseInputAt(state.Mouse.NativeState.Position))
+            if (!containsCursor && !d.ReceiveMouseInputAt(screenMousePosition))
                 return null;
 
             var dAsContainer = d as CompositeDrawable;
@@ -136,7 +137,7 @@ namespace osu.Framework.Graphics.Visualisation
 
                 foreach (var c in dAsContainer.AliveInternalChildren)
                 {
-                    var contained = findTargetIn(c, state);
+                    var contained = findTargetIn(c, screenMousePosition);
                     if (contained != null)
                     {
                         if (containedTarget == null ||
@@ -236,16 +237,16 @@ namespace osu.Framework.Graphics.Visualisation
             return targetSearching;
         }
 
-        private Drawable findTarget(InputState state)
+        private Drawable findTarget(Vector2 screenMousePosition)
         {
-            return findTargetIn(Parent?.Parent, state);
+            return findTargetIn(Parent?.Parent, screenMousePosition);
         }
 
         protected override bool OnClick(ClickEventArgs args)
         {
             if (targetSearching)
             {
-                Target = findTarget(args.State)?.Parent;
+                Target = findTarget(args.ScreenMousePosition)?.Parent;
 
                 if (Target != null)
                 {
@@ -260,7 +261,7 @@ namespace osu.Framework.Graphics.Visualisation
 
         protected override bool OnMouseMove(MouseMoveEventArgs args)
         {
-            overlay.Target = targetSearching ? findTarget(args.State) : inputManager.HoveredDrawables.OfType<VisualisedDrawable>().FirstOrDefault()?.Target;
+            overlay.Target = targetSearching ? findTarget(args.ScreenMousePosition) : inputManager.HoveredDrawables.OfType<VisualisedDrawable>().FirstOrDefault()?.Target;
             return base.OnMouseMove(args);
         }
     }

@@ -126,8 +126,7 @@ namespace osu.Framework.Input
 
             if (args.Kind == ButtonStateChangeKind.Pressed)
             {
-                if (mouse.IsPositionValid)
-                    MouseDownPosition = mouse.Position;
+                MouseDownPosition = mouse.Position;
                 HandleMouseDown(args);
             }
             else

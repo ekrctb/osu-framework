@@ -12,7 +12,7 @@ namespace osu.Framework.Input.Handlers.Mouse
 
         public OpenTK.Input.MouseState RawState;
 
-        public override Vector2 ScrollDelta => WasActive ? base.ScrollDelta : Vector2.Zero;
+        public readonly bool HasPreciseScroll;
 
         protected OpenTKMouseState(OpenTK.Input.MouseState tkState, bool active, Vector2? mappedPosition)
         {
@@ -38,7 +38,7 @@ namespace osu.Framework.Input.Handlers.Mouse
         private void addIfPressed(ButtonState tkState, MouseButton button)
         {
             if (tkState == ButtonState.Pressed)
-                SetPressed(button, true);
+                Buttons.Add(button);
         }
     }
 }
