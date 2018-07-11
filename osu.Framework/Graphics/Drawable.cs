@@ -1833,6 +1833,13 @@ namespace osu.Framework.Graphics
         /// </summary>
         public bool TriggerOnKeyDown(KeyDownEventArgs args) => OnKeyDown(createCloneInParentSpace(args));
 
+        public bool TriggerOnKeyDown(InputState state, Key key)
+        {
+            state = state ?? GetContainingInputManager()?.CurrentState;
+            var eventArgs = new KeyDownEventArgs(state ?? new InputState(), key);
+            return TriggerOnKeyDown(eventArgs);
+        }
+
         /// <summary>
         /// Triggered whenever a key was pressed.
         /// </summary>
