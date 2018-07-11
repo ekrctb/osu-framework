@@ -43,12 +43,7 @@ namespace osu.Framework.Input
         /// The initial input state. <see cref="CurrentState"/> is always equal (as a reference) to the value returned from this.
         /// <see cref="InputState.Mouse"/>, <see cref="InputState.Keyboard"/> and <see cref="InputState.Joystick"/> should be non-null.
         /// </summary>
-        protected virtual InputState CreateInitialState() => new InputState
-        {
-            Mouse = new MouseState { IsPositionValid = false },
-            Keyboard = new KeyboardState(),
-            Joystick = new JoystickState(),
-        };
+        protected virtual InputState CreateInitialState() => new InputState();
 
         /// <summary>
         /// The last processed state.
@@ -230,7 +225,7 @@ namespace osu.Framework.Input
                 result.Apply(CurrentState, this);
             }
 
-            if (CurrentState.Mouse.IsPositionValid)
+            if (!CurrentState.Mouse.HasUninitializedPosition)
             {
                 foreach (var d in PositionalInputQueue)
                     if (d is IRequireHighFrequencyMousePosition)
@@ -302,6 +297,8 @@ namespace osu.Framework.Input
             if (this is UserInputManager)
                 FrameStatistics.Increment(StatisticsCounterType.MouseQueue);
 
+            // even if the mouse position is uninitialized we want to build mouse input queue
+            // for drawables which handles mouse events regardless of the mouse position.
             foreach (Drawable d in AliveInternalChildren)
                 d.BuildMouseInputQueue(state.Mouse.Position, positionalInputQueue);
 

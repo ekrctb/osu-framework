@@ -21,7 +21,7 @@ namespace osu.Framework.Input
         public void Apply(InputState state, IInputStateChangeHandler handler)
         {
             var mouse = state.Mouse;
-            if (mouse.IsPositionValid && Delta != Vector2.Zero)
+            if (!mouse.HasUninitializedPosition && Delta != Vector2.Zero)
             {
                 var lastPosition = mouse.Position;
                 mouse.Position += Delta;

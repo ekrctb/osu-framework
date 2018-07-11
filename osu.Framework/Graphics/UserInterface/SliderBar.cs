@@ -7,6 +7,7 @@ using osu.Framework.Graphics.Containers;
 using OpenTK.Input;
 using OpenTK;
 using osu.Framework.EventArgs;
+using MouseEventArgs = osu.Framework.EventArgs.MouseEventArgs;
 
 namespace osu.Framework.Graphics.UserInterface
 {
@@ -127,7 +128,7 @@ namespace osu.Framework.Graphics.UserInterface
             }
         }
 
-        private void handleMouseInput(InputEventArgs args)
+        private void handleMouseInput(MouseEventArgs args)
         {
             var xPosition = ToLocalSpace(args.ScreenMousePosition).X - RangePadding;
 

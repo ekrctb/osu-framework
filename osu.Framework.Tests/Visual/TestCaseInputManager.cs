@@ -113,7 +113,7 @@ namespace osu.Framework.Tests.Visual
                 var currentState = inputManager.CurrentState;
                 var mouse = currentState.Mouse;
                 inputManagerStatus.Text = $"{inputManager}";
-                mouseStatus.Text = $"Mouse: {mouse.Position} {mouse.Scroll} " + String.Join(" ", mouse.Buttons);
+                mouseStatus.Text = $"Mouse: {(mouse.HasUninitializedPosition ? "(invalid)" : mouse.Position.ToString())} {mouse.Scroll} " + String.Join(" ", mouse.Buttons);
                 keyboardStatus.Text = "Keyboard: " + String.Join(" ", currentState.Keyboard.Keys);
                 joystickStatus.Text = "Joystick: " + String.Join(" ", currentState.Joystick.Buttons);
                 base.Update();

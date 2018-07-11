@@ -23,10 +23,9 @@ namespace osu.Framework.Input
         public void Apply(InputState state, IInputStateChangeHandler handler)
         {
             var mouse = state.Mouse;
-            if (!mouse.IsPositionValid || mouse.Position != Position)
+            if (mouse.HasUninitializedPosition || mouse.Position != Position)
             {
-                var lastPosition = !mouse.IsPositionValid ? Position : mouse.Position;
-                mouse.IsPositionValid = true;
+                var lastPosition = mouse.HasUninitializedPosition ? Position : mouse.Position;
                 mouse.Position = Position;
                 handler.HandleMousePositionChange(new MousePositionChangeArgs(state, this, lastPosition));
             }
