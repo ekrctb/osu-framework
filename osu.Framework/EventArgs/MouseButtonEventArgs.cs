@@ -7,7 +7,7 @@ using OpenTK.Input;
 
 namespace osu.Framework.EventArgs
 {
-    public abstract class MouseButtonEventArgs : InputEventArgs
+    public abstract class MouseButtonEventArgs : MouseEventArgs
     {
         public MouseButton Button;
         public Vector2 ScreenMouseDownPosition;
@@ -18,7 +18,7 @@ namespace osu.Framework.EventArgs
             : base(state)
         {
             Button = button;
-            ScreenMouseDownPosition = state.Mouse.Position;
+            ScreenMouseDownPosition = ScreenMousePosition;
         }
     }
 }

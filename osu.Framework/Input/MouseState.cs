@@ -8,18 +8,18 @@ namespace osu.Framework.Input
 {
     public class MouseState
     {
-        public ButtonStates<MouseButton> Buttons { get; private set; } = new ButtonStates<MouseButton>();
+        public Vector2 Position;
 
-        public Vector2 Scroll { get; set; }
+        public bool IsPositionValid { get; set; } = true;
+
+        public Vector2 Scroll;
+
+        public readonly ButtonStates<MouseButton> Buttons = new ButtonStates<MouseButton>();
+
+        public bool IsPressed(MouseButton button) => Buttons.IsPressed(button);
 
         public bool HasMainButtonPressed => Buttons.IsPressed(MouseButton.Left) || Buttons.IsPressed(MouseButton.Right);
 
         public bool HasAnyButtonPressed => Buttons.HasAnyButtonPressed;
-
-        public Vector2 Position { get; set; }
-
-        public bool IsPositionValid { get; set; } = true;
-
-        public bool IsPressed(MouseButton button) => Buttons.IsPressed(button);
     }
 }

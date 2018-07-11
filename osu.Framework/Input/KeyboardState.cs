@@ -7,12 +7,14 @@ namespace osu.Framework.Input
 {
     public class KeyboardState
     {
-        public ButtonStates<Key> Keys { get; private set; } = new ButtonStates<Key>();
+        public readonly ButtonStates<Key> Keys = new ButtonStates<Key>();
 
         public bool IsPressed(Key key) => Keys.IsPressed(key);
 
         public bool ControlPressed => Keys.IsPressed(Key.LControl) || Keys.IsPressed(Key.RControl);
+
         public bool AltPressed => Keys.IsPressed(Key.LAlt) || Keys.IsPressed(Key.RAlt);
+
         public bool ShiftPressed => Keys.IsPressed(Key.LShift) || Keys.IsPressed(Key.RShift);
 
         /// <summary>

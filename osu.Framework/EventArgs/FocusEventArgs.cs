@@ -5,7 +5,7 @@ using osu.Framework.Input;
 
 namespace osu.Framework.EventArgs
 {
-    public class FocusEventArgs : InputEventArgs
+    public class FocusEventArgs : MouseEventArgs
     {
         public FocusEventArgs(InputState state)
             : base(state)

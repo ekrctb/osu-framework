@@ -17,16 +17,6 @@ namespace osu.Framework.EventArgs
 
         protected Vector2 ToLocalSpace(Vector2 screenSpacePosition) => Drawable?.ToLocalSpace(screenSpacePosition) ?? screenSpacePosition;
 
-        /// <summary>
-        /// The current mouse position in screen space.
-        /// </summary>
-        public Vector2 ScreenMousePosition => State.Mouse.Position;
-
-        /// <summary>
-        /// The current mouse position in local space.
-        /// </summary>
-        public Vector2 MousePosition => ToLocalSpace(ScreenMousePosition);
-
         public InputEventArgs(InputState state) : base(state)
         {
         }

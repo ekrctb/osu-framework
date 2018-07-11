@@ -6,7 +6,7 @@ using OpenTK;
 
 namespace osu.Framework.EventArgs
 {
-    public class MouseMoveEventArgs : InputEventArgs
+    public class MouseMoveEventArgs : MouseEventArgs
     {
         /// <summary>
         /// The last mouse position before this mouse move in the screen space.
@@ -26,7 +26,7 @@ namespace osu.Framework.EventArgs
         public MouseMoveEventArgs(InputState state)
             : base(state)
         {
-            ScreenLastMousePosition = state.Mouse.Position;
+            ScreenLastMousePosition = ScreenMousePosition;
         }
     }
 }

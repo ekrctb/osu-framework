@@ -5,7 +5,7 @@ using osu.Framework.Input;
 
 namespace osu.Framework.EventArgs
 {
-    public class HoverLostEventArgs : InputEventArgs
+    public class HoverLostEventArgs : MouseEventArgs
     {
         public HoverLostEventArgs(InputState state)
             : base(state)
