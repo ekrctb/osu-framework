@@ -38,7 +38,7 @@ namespace osu.Framework.Platform.MacOS
             Load += OnLoad;
         }
 
-        protected void OnLoad(object sender, EventArgs e)
+        protected void OnLoad(object sender, System.EventArgs e)
         {
             try
             {

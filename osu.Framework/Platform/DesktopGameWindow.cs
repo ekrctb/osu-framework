@@ -99,7 +99,7 @@ namespace osu.Framework.Platform
             }
         }
 
-        protected void OnResize(object sender, EventArgs e)
+        protected void OnResize(object sender, System.EventArgs e)
         {
             if (ClientSize.IsEmpty) return;
 
@@ -111,7 +111,7 @@ namespace osu.Framework.Platform
             }
         }
 
-        protected void OnMove(object sender, EventArgs e)
+        protected void OnMove(object sender, System.EventArgs e)
         {
             // The game is windowed and the whole window is on the screen (it is not minimized or moved outside of the screen)
             if (WindowMode.Value == Configuration.WindowMode.Windowed

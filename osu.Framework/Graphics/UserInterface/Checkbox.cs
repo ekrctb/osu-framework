@@ -2,8 +2,8 @@
 // Licensed under the MIT Licence - https://raw.githubusercontent.com/ppy/osu-framework/master/LICENCE
 
 using osu.Framework.Configuration;
+using osu.Framework.EventArgs;
 using osu.Framework.Graphics.Containers;
-using osu.Framework.Input;
 
 namespace osu.Framework.Graphics.UserInterface
 {
@@ -11,12 +11,12 @@ namespace osu.Framework.Graphics.UserInterface
     {
         public Bindable<bool> Current { get; } = new Bindable<bool>();
 
-        protected override bool OnClick(InputState state)
+        protected override bool OnClick(ClickEventArgs args)
         {
             if (!Current.Disabled)
                 Current.Value = !Current;
 
-            base.OnClick(state);
+            base.OnClick(args);
             return true;
         }
     }

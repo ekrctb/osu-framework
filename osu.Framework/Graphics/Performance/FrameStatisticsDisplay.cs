@@ -11,7 +11,6 @@ using osu.Framework.Graphics.Primitives;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.Sprites;
 using osu.Framework.Graphics.Textures;
-using osu.Framework.Input;
 using osu.Framework.MathUtils;
 using osu.Framework.Statistics;
 using osu.Framework.Threading;
@@ -288,18 +287,18 @@ namespace osu.Framework.Graphics.Performance
             }
         }
 
-        protected override bool OnKeyDown(InputState state, KeyDownEventArgs args)
+        protected override bool OnKeyDown(KeyDownEventArgs args)
         {
             if (args.Key == Key.ControlLeft)
                 Active = false;
-            return base.OnKeyDown(state, args);
+            return base.OnKeyDown(args);
         }
 
-        protected override bool OnKeyUp(InputState state, KeyUpEventArgs args)
+        protected override bool OnKeyUp(KeyUpEventArgs args)
         {
             if (args.Key == Key.ControlLeft)
                 Active = true;
-            return base.OnKeyUp(state, args);
+            return base.OnKeyUp(args);
         }
 
         private void applyFrameGC(FrameStatistics frame)

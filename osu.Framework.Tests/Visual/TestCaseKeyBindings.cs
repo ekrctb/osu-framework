@@ -11,7 +11,6 @@ using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Sprites;
 using osu.Framework.Graphics.UserInterface;
-using osu.Framework.Input;
 using osu.Framework.Input.Bindings;
 using osu.Framework.Testing;
 using OpenTK;
@@ -374,33 +373,33 @@ namespace osu.Framework.Tests.Visual
                 new KeyBinding(new[] { InputKey.Control, InputKey.MouseWheelUp }, TestAction.Ctrl_and_WheelUp),
             };
 
-            protected override bool OnKeyDown(InputState state, KeyDownEventArgs args)
+            protected override bool OnKeyDown(KeyDownEventArgs args)
             {
-                base.OnKeyDown(state, args);
+                base.OnKeyDown(args);
                 return false;
             }
 
-            protected override bool OnKeyUp(InputState state, KeyUpEventArgs args)
+            protected override bool OnKeyUp(KeyUpEventArgs args)
             {
-                base.OnKeyUp(state, args);
+                base.OnKeyUp(args);
                 return false;
             }
 
-            protected override bool OnMouseDown(InputState state, MouseDownEventArgs args)
+            protected override bool OnMouseDown(MouseDownEventArgs args)
             {
-                base.OnMouseDown(state, args);
+                base.OnMouseDown(args);
                 return false;
             }
 
-            protected override bool OnMouseUp(InputState state, MouseUpEventArgs args)
+            protected override bool OnMouseUp(MouseUpEventArgs args)
             {
-                base.OnMouseUp(state, args);
+                base.OnMouseUp(args);
                 return false;
             }
 
-            protected override bool OnScroll(InputState state)
+            protected override bool OnScroll(ScrollEventArgs args)
             {
-                base.OnScroll(state);
+                base.OnScroll(args);
                 return false;
             }
 

@@ -2,12 +2,12 @@
 // Licensed under the MIT Licence - https://raw.githubusercontent.com/ppy/osu-framework/master/LICENCE
 
 using System.Collections.Generic;
+using osu.Framework.EventArgs;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Lines;
 using osu.Framework.Graphics.OpenGL.Textures;
 using osu.Framework.Graphics.Sprites;
 using osu.Framework.Graphics.Textures;
-using osu.Framework.Input;
 using osu.Framework.Testing;
 using OpenTK;
 using OpenTK.Graphics;
@@ -105,23 +105,23 @@ namespace osu.Framework.Tests.Visual
         {
             private Vector2 oldPos;
 
-            protected override bool OnDragStart(InputState state)
+            protected override bool OnDragStart(DragStartEventArgs args)
             {
-                AddVertex(state.Mouse.Position);
-                oldPos = state.Mouse.Position;
+                AddVertex(args.MousePosition);
+                oldPos = args.MousePosition;
                 return true;
             }
 
-            protected override bool OnDrag(InputState state)
+            protected override bool OnDrag(DragEventArgs args)
             {
-                Vector2 pos = state.Mouse.Position;
+                Vector2 pos = args.MousePosition;
                 if ((pos - oldPos).Length > 10)
                 {
                     AddVertex(pos);
                     oldPos = pos;
                 }
 
-                return base.OnDrag(state);
+                return base.OnDrag(args);
             }
         }
     }

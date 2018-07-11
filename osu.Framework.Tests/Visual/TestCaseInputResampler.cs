@@ -2,6 +2,7 @@
 // Licensed under the MIT Licence - https://raw.githubusercontent.com/ppy/osu-framework/master/LICENCE
 
 using System;
+using osu.Framework.EventArgs;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Lines;
 using osu.Framework.Graphics.OpenGL.Textures;
@@ -185,18 +186,18 @@ namespace osu.Framework.Tests.Visual
 
             protected virtual void AddUserVertex(Vector2 v) => AddRawVertex(v);
 
-            protected override bool OnDragStart(InputState state)
+            protected override bool OnDragStart(DragStartEventArgs args)
             {
-                AddUserVertex(state.Mouse.Position);
+                AddUserVertex(args.MousePosition);
                 DrawText.Text = "Custom Smoothed Drawn: Smoothed=" + NumVertices + ", Raw=" + NumRaw;
                 return true;
             }
 
-            protected override bool OnDrag(InputState state)
+            protected override bool OnDrag(DragEventArgs args)
             {
-                AddUserVertex(state.Mouse.Position);
+                AddUserVertex(args.MousePosition);
                 DrawText.Text = "Custom Smoothed Drawn: Smoothed=" + NumVertices + ", Raw=" + NumRaw;
-                return base.OnDrag(state);
+                return base.OnDrag(args);
             }
         }
 

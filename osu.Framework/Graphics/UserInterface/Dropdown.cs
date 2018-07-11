@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using osu.Framework.Configuration;
+using osu.Framework.EventArgs;
 using osu.Framework.Graphics.Containers;
-using osu.Framework.Input;
 using OpenTK.Graphics;
 using osu.Framework.Extensions.IEnumerableExtensions;
 
@@ -188,7 +188,7 @@ namespace osu.Framework.Graphics.UserInterface
 
         private void updateHeaderVisibility() => Header.Alpha = Menu.AnyPresent ? 1 : 0;
 
-        protected override bool OnHover(InputState state) => true;
+        protected override bool OnHover(HoverEventArgs args) => true;
 
         /// <summary>
         /// Creates the menu body.

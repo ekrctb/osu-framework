@@ -8,7 +8,7 @@ using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.Sprites;
 using osu.Framework.Graphics.UserInterface;
 using System;
-using osu.Framework.Input;
+using osu.Framework.EventArgs;
 using osu.Framework.Extensions.Color4Extensions;
 
 namespace osu.Framework.Testing.Drawables.Steps
@@ -67,7 +67,7 @@ namespace osu.Framework.Testing.Drawables.Steps
             currentNumber.SetDefault();
         }
 
-        protected override bool OnDragEnd(InputState state)
+        protected override bool OnDragEnd(DragEndEventArgs args)
         {
             var flash = new Box
             {
@@ -81,7 +81,7 @@ namespace osu.Framework.Testing.Drawables.Steps
             flash.FadeOut(200).Expire();
 
             Success();
-            return base.OnDragEnd(state);
+            return base.OnDragEnd(args);
         }
 
         protected override void UpdateValue(float normalizedValue)

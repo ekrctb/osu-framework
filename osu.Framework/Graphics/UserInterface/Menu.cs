@@ -9,7 +9,6 @@ using osu.Framework.EventArgs;
 using osu.Framework.Extensions.IEnumerableExtensions;
 using OpenTK.Graphics;
 using osu.Framework.Graphics.Containers;
-using osu.Framework.Input;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.Sprites;
 using osu.Framework.MathUtils;
@@ -466,7 +465,7 @@ namespace osu.Framework.Graphics.UserInterface
             }
         }
 
-        protected override bool OnKeyDown(InputState state, KeyDownEventArgs args)
+        protected override bool OnKeyDown(KeyDownEventArgs args)
         {
             if (args.Key == Key.Escape && !TopLevelMenu)
             {
@@ -474,17 +473,17 @@ namespace osu.Framework.Graphics.UserInterface
                 return true;
             }
 
-            return base.OnKeyDown(state, args);
+            return base.OnKeyDown(args);
         }
 
-        protected override bool OnClick(InputState state) => true;
-        protected override bool OnHover(InputState state) => true;
+        protected override bool OnClick(ClickEventArgs args) => true;
+        protected override bool OnHover(HoverEventArgs args) => true;
 
         public override bool AcceptsFocus => !TopLevelMenu;
 
         public override bool RequestsFocus => !TopLevelMenu && State == MenuState.Open;
 
-        protected override void OnFocusLost(InputState state)
+        protected override void OnFocusLost(FocusLostEventArgs args)
         {
             // Case where a sub-menu was opened the focus will be transferred to that sub-menu while this menu will receive OnFocusLost
             if (submenu?.State == MenuState.Open)
@@ -709,7 +708,7 @@ namespace osu.Framework.Graphics.UserInterface
                 Foreground.Colour = ForegroundColour;
             }
 
-            protected override bool OnHover(InputState state)
+            protected override bool OnHover(HoverEventArgs args)
             {
                 UpdateBackgroundColour();
                 UpdateForegroundColour();
@@ -723,16 +722,16 @@ namespace osu.Framework.Graphics.UserInterface
                 return false;
             }
 
-            protected override void OnHoverLost(InputState state)
+            protected override void OnHoverLost(HoverLostEventArgs args)
             {
                 UpdateBackgroundColour();
                 UpdateForegroundColour();
-                base.OnHoverLost(state);
+                base.OnHoverLost(args);
             }
 
             private bool hasSubmenu => Item.Items?.Count > 0;
 
-            protected override bool OnClick(InputState state)
+            protected override bool OnClick(ClickEventArgs args)
             {
                 if (Item.Action.Disabled)
                     return true;

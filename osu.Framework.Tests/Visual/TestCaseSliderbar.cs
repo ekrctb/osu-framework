@@ -11,6 +11,9 @@ using osu.Framework.Input;
 using osu.Framework.Testing;
 using OpenTK;
 using OpenTK.Graphics;
+using OpenTK.Input;
+using KeyboardState = osu.Framework.Input.KeyboardState;
+using MouseState = osu.Framework.Input.MouseState;
 
 namespace osu.Framework.Tests.Visual
 {
@@ -80,10 +83,7 @@ namespace osu.Framework.Tests.Visual
             {
                 var before = sliderBar.IsHovered;
                 sliderBar.IsHovered = true;
-                sliderBar.TriggerOnKeyDown(null, new KeyDownEventArgs
-                {
-                    Key = OpenTK.Input.Key.Left,
-                });
+                sliderBar.TriggerOnKeyDown(new KeyDownEventArgs(new InputState(), Key.Left));
                 sliderBar.IsHovered = before;
             });
 

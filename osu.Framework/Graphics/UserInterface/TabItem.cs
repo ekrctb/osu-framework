@@ -3,8 +3,8 @@
 
 using System;
 using osu.Framework.Configuration;
+using osu.Framework.EventArgs;
 using osu.Framework.Graphics.Containers;
-using osu.Framework.Input;
 
 namespace osu.Framework.Graphics.UserInterface
 {
@@ -67,9 +67,9 @@ namespace osu.Framework.Graphics.UserInterface
 
         public readonly BindableBool Active = new BindableBool();
 
-        protected override bool OnClick(InputState state)
+        protected override bool OnClick(ClickEventArgs args)
         {
-            base.OnClick(state);
+            base.OnClick(args);
             ActivationRequested?.Invoke(this);
             return true;
         }

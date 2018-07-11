@@ -1,9 +1,9 @@
 ﻿// Copyright (c) 2007-2018 ppy Pty Ltd <contact@ppy.sh>.
 // Licensed under the MIT Licence - https://raw.githubusercontent.com/ppy/osu-framework/master/LICENCE
 
+using osu.Framework.EventArgs;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Sprites;
-using osu.Framework.Input;
 using OpenTK.Graphics;
 using osu.Framework.Graphics.Shapes;
 
@@ -61,7 +61,7 @@ namespace osu.Framework.Graphics.UserInterface
             Anchor = Anchor.Centre,
         };
 
-        protected override bool OnClick(InputState state)
+        protected override bool OnClick(ClickEventArgs args)
         {
             if (Enabled.Value)
             {
@@ -78,7 +78,7 @@ namespace osu.Framework.Graphics.UserInterface
                 flash.Expire();
             }
 
-            return base.OnClick(state);
+            return base.OnClick(args);
         }
     }
 }

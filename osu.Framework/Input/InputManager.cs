@@ -14,7 +14,6 @@ using osu.Framework.Platform;
 using osu.Framework.Statistics;
 using OpenTK;
 using OpenTK.Input;
-using JoystickButtonEventArgs = osu.Framework.EventArgs.JoystickButtonEventArgs;
 using MouseMoveEventArgs = osu.Framework.EventArgs.MouseMoveEventArgs;
 
 namespace osu.Framework.Input

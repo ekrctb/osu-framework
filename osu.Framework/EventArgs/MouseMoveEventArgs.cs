@@ -21,7 +21,7 @@ namespace osu.Framework.EventArgs
         /// <summary>
         /// The difference of mouse position from last position to current position in local space.
         /// </summary>
-        public Vector2 MousePositionDelta => MousePosition - LastMousePosition;
+        public Vector2 Delta => MousePosition - LastMousePosition;
 
         public MouseMoveEventArgs(InputState state)
             : base(state)

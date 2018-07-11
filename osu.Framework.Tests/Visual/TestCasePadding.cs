@@ -1,11 +1,11 @@
 ﻿// Copyright (c) 2007-2018 ppy Pty Ltd <contact@ppy.sh>.
 // Licensed under the MIT Licence - https://raw.githubusercontent.com/ppy/osu-framework/master/LICENCE
 
+using osu.Framework.EventArgs;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.Sprites;
-using osu.Framework.Input;
 using osu.Framework.Testing;
 using OpenTK;
 using OpenTK.Graphics;
@@ -234,15 +234,15 @@ namespace osu.Framework.Tests.Visual
                 return base.Invalidate(invalidation, source, shallPropagate);
             }
 
-            protected override bool OnDrag(InputState state)
+            protected override bool OnDrag(DragEventArgs args)
             {
-                Position += state.Mouse.Delta;
+                Position += args.Delta;
                 return true;
             }
 
-            protected override bool OnDragEnd(InputState state) => true;
+            protected override bool OnDragEnd(DragEndEventArgs args) => true;
 
-            protected override bool OnDragStart(InputState state) => true;
+            protected override bool OnDragStart(DragStartEventArgs args) => true;
         }
     }
 }

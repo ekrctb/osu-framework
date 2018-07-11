@@ -1,11 +1,11 @@
 ﻿// Copyright (c) 2007-2018 ppy Pty Ltd <contact@ppy.sh>.
 // Licensed under the MIT Licence - https://raw.githubusercontent.com/ppy/osu-framework/master/LICENCE
 
+using osu.Framework.EventArgs;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.Sprites;
-using osu.Framework.Input;
 using osu.Framework.Testing;
 using OpenTK;
 using OpenTK.Graphics;
@@ -1068,20 +1068,20 @@ namespace osu.Framework.Tests.Visual
 
         public bool AllowDrag = true;
 
-        protected override bool OnDrag(InputState state)
+        protected override bool OnDrag(DragEventArgs args)
         {
             if (!AllowDrag) return false;
 
-            Position += state.Mouse.Delta;
+            Position += args.Delta;
             return true;
         }
 
-        protected override bool OnDragEnd(InputState state)
+        protected override bool OnDragEnd(DragEndEventArgs args)
         {
             return true;
         }
 
-        protected override bool OnDragStart(InputState state) => AllowDrag;
+        protected override bool OnDragStart(DragStartEventArgs args) => AllowDrag;
     }
 
     internal class InfofulBox : Container
@@ -1089,20 +1089,20 @@ namespace osu.Framework.Tests.Visual
         public bool Chameleon = false;
         public bool AllowDrag = true;
 
-        protected override bool OnDrag(InputState state)
+        protected override bool OnDrag(DragEventArgs args)
         {
             if (!AllowDrag) return false;
 
-            Position += state.Mouse.Delta;
+            Position += args.Delta;
             return true;
         }
 
-        protected override bool OnDragEnd(InputState state)
+        protected override bool OnDragEnd(DragEndEventArgs args)
         {
             return true;
         }
 
-        protected override bool OnDragStart(InputState state) => AllowDrag;
+        protected override bool OnDragStart(DragStartEventArgs args) => AllowDrag;
 
         public InfofulBox()
         {

@@ -8,7 +8,6 @@ using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.Sprites;
-using osu.Framework.Input;
 using osu.Framework.Testing;
 using OpenTK;
 using OpenTK.Graphics;
@@ -109,7 +108,7 @@ namespace osu.Framework.Tests.Visual
                 };
             }
 
-            protected override bool OnMouseDown(InputState state, MouseDownEventArgs args)
+            protected override bool OnMouseDown(MouseDownEventArgs args)
             {
                 HitCount++;
                 this.MoveToX(xPos + 100).Then().MoveToX(xPos, 1000, Easing.In);

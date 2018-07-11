@@ -231,7 +231,7 @@ namespace osu.Framework.Graphics.Visualisation
             }
         }
 
-        protected override bool OnMouseDown(InputState state, MouseDownEventArgs args)
+        protected override bool OnMouseDown(MouseDownEventArgs args)
         {
             return targetSearching;
         }
@@ -241,11 +241,11 @@ namespace osu.Framework.Graphics.Visualisation
             return findTargetIn(Parent?.Parent, state);
         }
 
-        protected override bool OnClick(InputState state)
+        protected override bool OnClick(ClickEventArgs args)
         {
             if (targetSearching)
             {
-                Target = findTarget(state)?.Parent;
+                Target = findTarget(args.State)?.Parent;
 
                 if (Target != null)
                 {
@@ -255,13 +255,13 @@ namespace osu.Framework.Graphics.Visualisation
                 }
             }
 
-            return base.OnClick(state);
+            return base.OnClick(args);
         }
 
-        protected override bool OnMouseMove(InputState state)
+        protected override bool OnMouseMove(MouseMoveEventArgs args)
         {
-            overlay.Target = targetSearching ? findTarget(state) : inputManager.HoveredDrawables.OfType<VisualisedDrawable>().FirstOrDefault()?.Target;
-            return base.OnMouseMove(state);
+            overlay.Target = targetSearching ? findTarget(args.State) : inputManager.HoveredDrawables.OfType<VisualisedDrawable>().FirstOrDefault()?.Target;
+            return base.OnMouseMove(args);
         }
     }
 }

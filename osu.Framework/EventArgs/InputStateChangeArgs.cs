@@ -9,7 +9,7 @@ namespace osu.Framework.EventArgs
     /// <summary>
     /// Denotes information of input event.
     /// </summary>
-    public class InputStateChangeArgs : EventArgsBase
+    public class InputStateChangeArgs : ArgsBase
     {
         /// <summary>
         /// An <see cref="IInput"/> that caused this input state change.

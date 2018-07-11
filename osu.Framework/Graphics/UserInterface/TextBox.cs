@@ -632,11 +632,11 @@ namespace osu.Framework.Graphics.UserInterface
                 Schedule(consumePendingText);
         }
 
-        protected override bool OnKeyDown(InputState state, KeyDownEventArgs args)
+        protected override bool OnKeyDown(KeyDownEventArgs args)
         {
             if (textInput?.ImeActive == true || ReadOnly) return true;
 
-            if (state.Keyboard.ControlPressed || state.Keyboard.SuperPressed)
+            if (args.State.Keyboard.ControlPressed || args.State.Keyboard.SuperPressed)
                 return false;
 
             // we only care about keys which can result in text output.
@@ -654,7 +654,7 @@ namespace osu.Framework.Graphics.UserInterface
                     return true;
             }
 
-            return base.OnKeyDown(state, args) || consumingText;
+            return base.OnKeyDown(args) || consumingText;
         }
 
         private bool keyProducesCharacter(Key key) => (key == Key.Space || key >= Key.Keypad0) && key != Key.KeypadEnter;
@@ -684,31 +684,31 @@ namespace osu.Framework.Graphics.UserInterface
             OnCommit?.Invoke(this, true);
         }
 
-        protected override bool OnKeyUp(InputState state, KeyUpEventArgs args)
+        protected override bool OnKeyUp(KeyUpEventArgs args)
         {
-            if (!state.Keyboard.Keys.Any())
+            if (!args.State.Keyboard.Keys.Any())
                 EndConsumingText();
 
-            return base.OnKeyUp(state, args);
+            return base.OnKeyUp(args);
         }
 
-        protected override bool OnDrag(InputState state)
+        protected override bool OnDrag(DragEventArgs args)
         {
             //if (textInput?.ImeActive == true) return true;
 
             if (doubleClickWord != null)
             {
                 //select words at a time
-                if (getCharacterClosestTo(state.Mouse.Position) > doubleClickWord[1])
+                if (getCharacterClosestTo(args.MousePosition) > doubleClickWord[1])
                 {
                     selectionStart = doubleClickWord[0];
-                    selectionEnd = findSeparatorIndex(text, getCharacterClosestTo(state.Mouse.Position) - 1, 1);
+                    selectionEnd = findSeparatorIndex(text, getCharacterClosestTo(args.MousePosition) - 1, 1);
                     selectionEnd = selectionEnd >= 0 ? selectionEnd : text.Length;
                 }
-                else if (getCharacterClosestTo(state.Mouse.Position) < doubleClickWord[0])
+                else if (getCharacterClosestTo(args.MousePosition) < doubleClickWord[0])
                 {
                     selectionStart = doubleClickWord[1];
-                    selectionEnd = findSeparatorIndex(text, getCharacterClosestTo(state.Mouse.Position), -1);
+                    selectionEnd = findSeparatorIndex(text, getCharacterClosestTo(args.MousePosition), -1);
                     selectionEnd = selectionEnd >= 0 ? selectionEnd + 1 : 0;
                 }
                 else
@@ -724,7 +724,7 @@ namespace osu.Framework.Graphics.UserInterface
             {
                 if (text.Length == 0) return true;
 
-                selectionEnd = getCharacterClosestTo(state.Mouse.Position);
+                selectionEnd = getCharacterClosestTo(args.MousePosition);
                 if (selectionLength > 0)
                     GetContainingInputManager().ChangeFocus(this);
 
@@ -734,19 +734,16 @@ namespace osu.Framework.Graphics.UserInterface
             return true;
         }
 
-        protected override bool OnDragStart(InputState state)
+        protected override bool OnDragStart(DragStartEventArgs args)
         {
             if (HasFocus) return true;
 
-            if (!state.Mouse.PositionMouseDown.HasValue)
-                throw new ArgumentNullException(nameof(state.Mouse.PositionMouseDown));
-
-            Vector2 posDiff = state.Mouse.PositionMouseDown.Value - state.Mouse.Position;
+            Vector2 posDiff = args.MouseDownPosition - args.MousePosition;
 
             return Math.Abs(posDiff.X) > Math.Abs(posDiff.Y);
         }
 
-        protected override bool OnDoubleClick(InputState state)
+        protected override bool OnDoubleClick(DoubleClickEventArgs args)
         {
             if (textInput?.ImeActive == true) return true;
 
@@ -754,7 +751,7 @@ namespace osu.Framework.Graphics.UserInterface
 
             if (AllowClipboardExport)
             {
-                int hover = Math.Min(text.Length - 1, getCharacterClosestTo(state.Mouse.Position));
+                int hover = Math.Min(text.Length - 1, getCharacterClosestTo(args.MousePosition));
 
                 int lastSeparator = findSeparatorIndex(text, hover, -1);
                 int nextSeparator = findSeparatorIndex(text, hover, 1);
@@ -788,24 +785,24 @@ namespace osu.Framework.Graphics.UserInterface
             return -1;
         }
 
-        protected override bool OnMouseDown(InputState state, MouseDownEventArgs args)
+        protected override bool OnMouseDown(MouseDownEventArgs args)
         {
             if (textInput?.ImeActive == true) return true;
 
-            selectionStart = selectionEnd = getCharacterClosestTo(state.Mouse.Position);
+            selectionStart = selectionEnd = getCharacterClosestTo(args.MousePosition);
 
             cursorAndLayout.Invalidate();
 
             return false;
         }
 
-        protected override bool OnMouseUp(InputState state, MouseUpEventArgs args)
+        protected override bool OnMouseUp(MouseUpEventArgs args)
         {
             doubleClickWord = null;
             return true;
         }
 
-        protected override void OnFocusLost(InputState state)
+        protected override void OnFocusLost(FocusLostEventArgs args)
         {
             unbindInput();
 
@@ -821,9 +818,9 @@ namespace osu.Framework.Graphics.UserInterface
 
         public override bool AcceptsFocus => true;
 
-        protected override bool OnClick(InputState state) => !ReadOnly;
+        protected override bool OnClick(ClickEventArgs args) => !ReadOnly;
 
-        protected override void OnFocus(InputState state)
+        protected override void OnFocus(FocusEventArgs args)
         {
             bindInput();
 

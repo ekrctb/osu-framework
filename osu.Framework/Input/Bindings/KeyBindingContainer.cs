@@ -73,13 +73,13 @@ namespace osu.Framework.Input.Bindings
         /// </summary>
         protected virtual bool Prioritised => false;
 
-        protected override bool OnScroll(InputState state)
+        protected override bool OnScroll(ScrollEventArgs args)
         {
-            var scrollDelta = state.Mouse.ScrollDelta;
-            var isPrecise = state.Mouse.HasPreciseScroll;
+            var scrollDelta = args.ScrollDelta;
+            var isPrecise = args.IsPrecise;
             var key = KeyCombination.FromScrollDelta(scrollDelta);
             if (key == InputKey.None) return false;
-            return handleNewPressed(state, key, false, scrollDelta, isPrecise) | handleNewReleased(state, key);
+            return handleNewPressed(args.State, key, false, scrollDelta, isPrecise) | handleNewReleased(args.State, key);
         }
 
         internal override bool BuildKeyboardInputQueue(List<Drawable> queue, bool allowBlocking = true)
@@ -96,11 +96,11 @@ namespace osu.Framework.Input.Bindings
             return true;
         }
 
-        protected override bool OnMouseDown(InputState state, MouseDownEventArgs args) => handleNewPressed(state, KeyCombination.FromMouseButton(args.Button), false);
+        protected override bool OnMouseDown(MouseDownEventArgs args) => handleNewPressed(args.State, KeyCombination.FromMouseButton(args.Button), false);
 
-        protected override bool OnMouseUp(InputState state, MouseUpEventArgs args) => handleNewReleased(state, KeyCombination.FromMouseButton(args.Button));
+        protected override bool OnMouseUp(MouseUpEventArgs args) => handleNewReleased(args.State, KeyCombination.FromMouseButton(args.Button));
 
-        protected override bool OnKeyDown(InputState state, KeyDownEventArgs args)
+        protected override bool OnKeyDown(KeyDownEventArgs args)
         {
             if (args.Repeat && !SendRepeats)
             {
@@ -110,14 +110,14 @@ namespace osu.Framework.Input.Bindings
                 return false;
             }
 
-            return handleNewPressed(state, KeyCombination.FromKey(args.Key), args.Repeat);
+            return handleNewPressed(args.State, KeyCombination.FromKey(args.Key), args.Repeat);
         }
 
-        protected override bool OnKeyUp(InputState state, KeyUpEventArgs args) => handleNewReleased(state, KeyCombination.FromKey(args.Key));
+        protected override bool OnKeyUp(KeyUpEventArgs args) => handleNewReleased(args.State, KeyCombination.FromKey(args.Key));
 
-        protected override bool OnJoystickPress(InputState state, JoystickButtonEventArgs args) => handleNewPressed(state, KeyCombination.FromJoystickButton(args.Button), false);
+        protected override bool OnJoystickPress(JoystickPressEventArgs args) => handleNewPressed(args.State, KeyCombination.FromJoystickButton(args.Button), false);
 
-        protected override bool OnJoystickRelease(InputState state, JoystickButtonEventArgs args) => handleNewReleased(state, KeyCombination.FromJoystickButton(args.Button));
+        protected override bool OnJoystickRelease(JoystickReleaseEventArgs args) => handleNewReleased(args.State, KeyCombination.FromJoystickButton(args.Button));
 
         private bool handleNewPressed(InputState state, InputKey newKey, bool repeat, Vector2? scrollDelta = null, bool isPrecise = false)
         {

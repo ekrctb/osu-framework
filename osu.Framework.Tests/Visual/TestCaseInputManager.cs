@@ -121,50 +121,50 @@ namespace osu.Framework.Tests.Visual
 
             public int MouseDownCount;
 
-            protected override bool OnMouseDown(InputState state, MouseDownEventArgs args)
+            protected override bool OnMouseDown(MouseDownEventArgs args)
             {
                 ++MouseDownCount;
-                onMouseDownStatus.Text = $"OnMouseDown {MouseDownCount}: Position={state.Mouse.Position}";
+                onMouseDownStatus.Text = $"OnMouseDown {MouseDownCount}: Position={args.MousePosition}";
                 return true;
             }
 
             public int MouseUpCount;
 
-            protected override bool OnMouseUp(InputState state, MouseUpEventArgs args)
+            protected override bool OnMouseUp(MouseUpEventArgs args)
             {
                 ++MouseUpCount;
-                onMouseUpStatus.Text = $"OnMouseUp {MouseUpCount}: Position={state.Mouse.Position}, PositionMouseDown={state.Mouse.PositionMouseDown}";
-                return base.OnMouseUp(state, args);
+                onMouseUpStatus.Text = $"OnMouseUp {MouseUpCount}: Position={args.MousePosition}, MouseDownPosition={args.MouseDownPosition}";
+                return base.OnMouseUp(args);
             }
 
             public int MouseMoveCount;
 
-            protected override bool OnMouseMove(InputState state)
+            protected override bool OnMouseMove(MouseMoveEventArgs args)
             {
                 ++MouseMoveCount;
-                onMouseMoveStatus.Text = $"OnMouseMove {MouseMoveCount}: Position={state.Mouse.Position}, Delta={state.Mouse.Delta}";
-                return base.OnMouseMove(state);
+                onMouseMoveStatus.Text = $"OnMouseMove {MouseMoveCount}: Position={args.MousePosition}, Delta={args.Delta}";
+                return base.OnMouseMove(args);
             }
 
             public int ScrollCount;
 
-            protected override bool OnScroll(InputState state)
+            protected override bool OnScroll(ScrollEventArgs args)
             {
                 ++ScrollCount;
-                onScrollStatus.Text = $"OnScroll {ScrollCount}: Scroll={state.Mouse.Scroll}, ScrollDelta={state.Mouse.ScrollDelta}, HasPreciseScroll={state.Mouse.HasPreciseScroll}";
-                return base.OnScroll(state);
+                onScrollStatus.Text = $"OnScroll {ScrollCount}: Scroll={args.State.Mouse.Scroll}, ScrollDelta={args.ScrollDelta}, IsPrecise={args.IsPrecise}";
+                return base.OnScroll(args);
             }
 
             public int HoverCount;
 
-            protected override bool OnHover(InputState state)
+            protected override bool OnHover(HoverEventArgs args)
             {
                 ++HoverCount;
-                onHoverStatus.Text = $"OnHover {HoverCount}: Position={state.Mouse.Position}";
-                return base.OnHover(state);
+                onHoverStatus.Text = $"OnHover {HoverCount}: Position={args.MousePosition}";
+                return base.OnHover(args);
             }
 
-            protected override bool OnClick(InputState state)
+            protected override bool OnClick(ClickEventArgs args)
             {
                 this.MoveToOffset(new Vector2(100, 0)).Then().MoveToOffset(new Vector2(-100, 0), 1000, Easing.In);
                 return true;

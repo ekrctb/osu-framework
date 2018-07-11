@@ -9,7 +9,6 @@ using OpenTK.Graphics;
 using osu.Framework.Allocation;
 using osu.Framework.Configuration;
 using osu.Framework.EventArgs;
-using osu.Framework.Input;
 using osu.Framework.Timing;
 using OpenTK.Input;
 using osu.Framework.Graphics.Shapes;
@@ -96,19 +95,19 @@ namespace osu.Framework.Graphics.Visualisation
             });
         }
 
-        protected override bool OnKeyDown(InputState state, KeyDownEventArgs args)
+        protected override bool OnKeyDown(KeyDownEventArgs args)
         {
             if (!args.Repeat)
                 setHoldState(args.Key == Key.ControlLeft || args.Key == Key.ControlRight);
 
-            return base.OnKeyDown(state, args);
+            return base.OnKeyDown(args);
         }
 
-        protected override bool OnKeyUp(InputState state, KeyUpEventArgs args)
+        protected override bool OnKeyUp(KeyUpEventArgs args)
         {
-            if (!state.Keyboard.ControlPressed)
+            if (!args.State.Keyboard.ControlPressed)
                 setHoldState(false);
-            return base.OnKeyUp(state, args);
+            return base.OnKeyUp(args);
         }
 
         private void setHoldState(bool controlPressed)

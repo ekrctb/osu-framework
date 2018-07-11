@@ -1,10 +1,10 @@
 ﻿// Copyright (c) 2007-2018 ppy Pty Ltd <contact@ppy.sh>.
 // Licensed under the MIT Licence - https://raw.githubusercontent.com/ppy/osu-framework/master/LICENCE
 
+using osu.Framework.EventArgs;
 using OpenTK.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
-using osu.Framework.Input;
 
 namespace osu.Framework.Graphics.UserInterface
 {
@@ -61,16 +61,16 @@ namespace osu.Framework.Graphics.UserInterface
             };
         }
 
-        protected override bool OnHover(InputState state)
+        protected override bool OnHover(HoverEventArgs args)
         {
             Background.Colour = BackgroundColourHover;
-            return base.OnHover(state);
+            return base.OnHover(args);
         }
 
-        protected override void OnHoverLost(InputState state)
+        protected override void OnHoverLost(HoverLostEventArgs args)
         {
             Background.Colour = BackgroundColour;
-            base.OnHoverLost(state);
+            base.OnHoverLost(args);
         }
     }
 }

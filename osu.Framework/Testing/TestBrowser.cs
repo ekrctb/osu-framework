@@ -16,7 +16,6 @@ using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.Sprites;
 using osu.Framework.Graphics.UserInterface;
-using osu.Framework.Input;
 using osu.Framework.Input.Bindings;
 using osu.Framework.Logging;
 using osu.Framework.Platform;
@@ -297,7 +296,7 @@ namespace osu.Framework.Testing
             }
         }
 
-        protected override bool OnKeyDown(InputState state, KeyDownEventArgs args)
+        protected override bool OnKeyDown(KeyDownEventArgs args)
         {
             if (!args.Repeat)
             {
@@ -309,7 +308,7 @@ namespace osu.Framework.Testing
                 }
             }
 
-            return base.OnKeyDown(state, args);
+            return base.OnKeyDown(args);
         }
 
         public override IEnumerable<KeyBinding> DefaultKeyBindings => new[]

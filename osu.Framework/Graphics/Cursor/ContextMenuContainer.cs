@@ -60,7 +60,7 @@ namespace osu.Framework.Graphics.Cursor
             }
         }
 
-        protected override bool OnMouseDown(InputState state, MouseDownEventArgs args)
+        protected override bool OnMouseDown(MouseDownEventArgs args)
         {
             switch (args.Button)
             {
@@ -76,7 +76,7 @@ namespace osu.Framework.Graphics.Cursor
 
                     menu.Items = menuTarget.ContextMenuItems;
 
-                    menu.Position = ToLocalSpace(state.Mouse.NativeState.Position);
+                    menu.Position = ToLocalSpace(args.ScreenMousePosition);
                     relativeCursorPosition = ToSpaceOfOtherDrawable(menu.Position, menuTarget);
                     menu.Open();
                     return true;

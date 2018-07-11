@@ -85,20 +85,21 @@ namespace osu.Framework.Graphics.UserInterface
             UpdateValue(NormalizedValue);
         }
 
-        protected override bool OnClick(InputState state)
+        protected override bool OnClick(ClickEventArgs args)
         {
-            handleMouseInput(state);
+            handleMouseInput(args.State);
             return true;
         }
 
-        protected override bool OnDrag(InputState state)
+        protected override bool OnDrag(DragEventArgs args)
         {
-            handleMouseInput(state);
+            handleMouseInput(args.State);
             return true;
         }
 
-        protected override bool OnDragStart(InputState state)
+        protected override bool OnDragStart(DragStartEventArgs args)
         {
+            var state = args.State;
             Trace.Assert(state.Mouse.PositionMouseDown.HasValue,
                 $@"Can not start a {nameof(SliderBar<T>)} drag without knowing the mouse down position.");
 
@@ -108,9 +109,9 @@ namespace osu.Framework.Graphics.UserInterface
             return Math.Abs(posDiff.X) > Math.Abs(posDiff.Y);
         }
 
-        protected override bool OnDragEnd(InputState state) => true;
+        protected override bool OnDragEnd(DragEndEventArgs args) => true;
 
-        protected override bool OnKeyDown(InputState state, KeyDownEventArgs args)
+        protected override bool OnKeyDown(KeyDownEventArgs args)
         {
             if (!IsHovered || CurrentNumber.Disabled)
                 return false;

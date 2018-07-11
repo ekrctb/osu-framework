@@ -28,7 +28,7 @@ namespace osu.Framework.Platform.Windows
             Window.WindowStateChanged += onWindowOnWindowStateChanged;
         }
 
-        private void onWindowOnWindowStateChanged(object sender, EventArgs e)
+        private void onWindowOnWindowStateChanged(object sender, System.EventArgs e)
         {
             if (Window.WindowState != OpenTK.WindowState.Minimized)
                 OnActivated();

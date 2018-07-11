@@ -100,7 +100,7 @@ namespace osu.Framework.Input
         /// </summary>
         public Drawable DraggedDrawable { get; protected set; }
 
-        public virtual void HandlePositionChange(InputStateChangeArgs args)
+        public virtual void HandlePositionChange(MousePositionChangeArgs args)
         {
             if (EnableDrag)
             {
@@ -231,11 +231,12 @@ namespace osu.Framework.Input
             return ClickedDrawable.ReceiveMouseInputAt(mousePosition) && ClickedDrawable.TriggerOnDoubleClick(eventArgs);
         }
 
-        protected virtual bool HandleMouseDrag(InputStateChangeArgs args)
+        protected virtual bool HandleMouseDrag(MousePositionChangeArgs args)
         {
             var eventArgs = new DragEventArgs(args.State, Button)
             {
-                ScreenMouseDownPosition = MouseDownPosition ?? throw new AssertionException($"{nameof(MouseDownPosition)} must be non-null at {nameof(HandleMouseDrag)}")
+                ScreenMouseDownPosition = MouseDownPosition ?? throw new AssertionException($"{nameof(MouseDownPosition)} must be non-null at {nameof(HandleMouseDrag)}"),
+                ScreenLastMousePosition = args.LastPosition,
             };
 
             //Once a drawable is dragged, it remains in a dragged state until the drag is finished.

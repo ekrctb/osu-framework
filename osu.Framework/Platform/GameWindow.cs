@@ -216,25 +216,25 @@ namespace osu.Framework.Platform
         public Point PointToScreen(Point point) => Implementation.PointToScreen(point);
         public void Dispose() => Implementation.Dispose();
 
-        public event EventHandler<EventArgs> Load { add => Implementation.Load += value; remove => Implementation.Load -= value; }
-        public event EventHandler<EventArgs> Unload { add => Implementation.Unload += value; remove => Implementation.Unload -= value; }
+        public event EventHandler<System.EventArgs> Load { add => Implementation.Load += value; remove => Implementation.Load -= value; }
+        public event EventHandler<System.EventArgs> Unload { add => Implementation.Unload += value; remove => Implementation.Unload -= value; }
         public event EventHandler<FrameEventArgs> UpdateFrame { add => Implementation.UpdateFrame += value; remove => Implementation.UpdateFrame -= value; }
         public event EventHandler<FrameEventArgs> RenderFrame { add => Implementation.RenderFrame += value; remove => Implementation.RenderFrame -= value; }
-        public event EventHandler<EventArgs> Move { add => Implementation.Move += value; remove => Implementation.Move -= value; }
-        public event EventHandler<EventArgs> Resize { add => Implementation.Resize += value; remove => Implementation.Resize -= value; }
+        public event EventHandler<System.EventArgs> Move { add => Implementation.Move += value; remove => Implementation.Move -= value; }
+        public event EventHandler<System.EventArgs> Resize { add => Implementation.Resize += value; remove => Implementation.Resize -= value; }
         public event EventHandler<CancelEventArgs> Closing { add => Implementation.Closing += value; remove => Implementation.Closing -= value; }
-        public event EventHandler<EventArgs> Closed { add => Implementation.Closed += value; remove => Implementation.Closed -= value; }
-        public event EventHandler<EventArgs> Disposed { add => Implementation.Disposed += value; remove => Implementation.Disposed -= value; }
-        public event EventHandler<EventArgs> IconChanged { add => Implementation.IconChanged += value; remove => Implementation.IconChanged -= value; }
-        public event EventHandler<EventArgs> TitleChanged { add => Implementation.TitleChanged += value; remove => Implementation.TitleChanged -= value; }
-        public event EventHandler<EventArgs> VisibleChanged { add => Implementation.VisibleChanged += value; remove => Implementation.VisibleChanged -= value; }
-        public event EventHandler<EventArgs> FocusedChanged { add => Implementation.FocusedChanged += value; remove => Implementation.FocusedChanged -= value; }
-        public event EventHandler<EventArgs> WindowBorderChanged { add => Implementation.WindowBorderChanged += value; remove => Implementation.WindowBorderChanged -= value; }
-        public event EventHandler<EventArgs> WindowStateChanged { add => Implementation.WindowStateChanged += value; remove => Implementation.WindowStateChanged -= value; }
+        public event EventHandler<System.EventArgs> Closed { add => Implementation.Closed += value; remove => Implementation.Closed -= value; }
+        public event EventHandler<System.EventArgs> Disposed { add => Implementation.Disposed += value; remove => Implementation.Disposed -= value; }
+        public event EventHandler<System.EventArgs> IconChanged { add => Implementation.IconChanged += value; remove => Implementation.IconChanged -= value; }
+        public event EventHandler<System.EventArgs> TitleChanged { add => Implementation.TitleChanged += value; remove => Implementation.TitleChanged -= value; }
+        public event EventHandler<System.EventArgs> VisibleChanged { add => Implementation.VisibleChanged += value; remove => Implementation.VisibleChanged -= value; }
+        public event EventHandler<System.EventArgs> FocusedChanged { add => Implementation.FocusedChanged += value; remove => Implementation.FocusedChanged -= value; }
+        public event EventHandler<System.EventArgs> WindowBorderChanged { add => Implementation.WindowBorderChanged += value; remove => Implementation.WindowBorderChanged -= value; }
+        public event EventHandler<System.EventArgs> WindowStateChanged { add => Implementation.WindowStateChanged += value; remove => Implementation.WindowStateChanged -= value; }
         public event EventHandler<KeyPressEventArgs> KeyPress { add => Implementation.KeyPress += value; remove => Implementation.KeyPress -= value; }
         public event EventHandler<KeyboardKeyEventArgs> KeyUp { add => Implementation.KeyUp += value; remove => Implementation.KeyUp -= value; }
-        public event EventHandler<EventArgs> MouseLeave { add => Implementation.MouseLeave += value; remove => Implementation.MouseLeave -= value; }
-        public event EventHandler<EventArgs> MouseEnter { add => Implementation.MouseEnter += value; remove => Implementation.MouseEnter -= value; }
+        public event EventHandler<System.EventArgs> MouseLeave { add => Implementation.MouseLeave += value; remove => Implementation.MouseLeave -= value; }
+        public event EventHandler<System.EventArgs> MouseEnter { add => Implementation.MouseEnter += value; remove => Implementation.MouseEnter -= value; }
         public event EventHandler<MouseButtonEventArgs> MouseDown { add => Implementation.MouseDown += value; remove => Implementation.MouseDown -= value; }
         public event EventHandler<MouseButtonEventArgs> MouseUp { add => Implementation.MouseUp += value; remove => Implementation.MouseUp -= value; }
         public event EventHandler<MouseMoveEventArgs> MouseMove { add => Implementation.MouseMove += value; remove => Implementation.MouseMove -= value; }

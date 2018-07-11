@@ -18,6 +18,7 @@ using OpenTK.Graphics;
 using OpenTK.Input;
 using MouseDownEventArgs = osu.Framework.EventArgs.MouseDownEventArgs;
 using osu.Framework.MathUtils;
+using MouseMoveEventArgs = osu.Framework.EventArgs.MouseMoveEventArgs;
 
 namespace osu.Framework.Tests.Visual
 {
@@ -414,23 +415,23 @@ namespace osu.Framework.Tests.Visual
                 };
             }
 
-            protected override bool OnScroll(InputState state) => CounterFor("Scroll").NewState(state);
-            protected override bool OnMouseMove(InputState state) => CounterFor("Move").NewState(state);
-            protected override bool OnDragStart(InputState state) => CounterFor("DragStart").NewState(state);
-            protected override bool OnDragEnd(InputState state) => CounterFor("DragEnd").NewState(state);
+            protected override bool OnScroll(ScrollEventArgs args) => CounterFor("Scroll").NewState(args.State);
+            protected override bool OnMouseMove(MouseMoveEventArgs args) => CounterFor("Move").NewState(args.State);
+            protected override bool OnDragStart(DragStartEventArgs args) => CounterFor("DragStart").NewState(args.State);
+            protected override bool OnDragEnd(DragEndEventArgs args) => CounterFor("DragEnd").NewState(args.State);
 
-            protected override bool OnMouseDown(InputState state, MouseDownEventArgs args) => CounterFor("MouseDown").NewState(state, args);
-            protected override bool OnMouseUp(InputState state, MouseUpEventArgs args) => CounterFor("MouseUp").NewState(state, args);
+            protected override bool OnMouseDown(MouseDownEventArgs args) => CounterFor("MouseDown").NewState(args.State, args);
+            protected override bool OnMouseUp(MouseUpEventArgs args) => CounterFor("MouseUp").NewState(args.State, args);
 
-            protected override bool OnClick(InputState state)
+            protected override bool OnClick(ClickEventArgs args)
             {
-                CounterFor("Click").NewState(state);
+                CounterFor("Click").NewState(args.State);
                 return true;
             }
 
-            protected override bool OnDoubleClick(InputState state)
+            protected override bool OnDoubleClick(DoubleClickEventArgs args)
             {
-                CounterFor("DoubleClick").NewState(state);
+                CounterFor("DoubleClick").NewState(args.State);
                 return true;
             }
 
@@ -472,7 +473,7 @@ namespace osu.Framework.Tests.Visual
             public class EventCounter : CompositeDrawable
             {
                 public InputState LastState;
-                public MouseDownEventArgs LastArgs;
+                public InputEventArgs LastArgs;
 
                 private int count;
                 private readonly SpriteText text;
@@ -502,7 +503,7 @@ namespace osu.Framework.Tests.Visual
                     LastState = null;
                 }
 
-                public bool NewState(InputState state, MouseDownEventArgs args = null)
+                public bool NewState(InputState state, InputEventArgs args = null)
                 {
                     LastState = state.Clone();
                     LastArgs = args;
@@ -547,28 +548,28 @@ namespace osu.Framework.Tests.Visual
                     };
                 }
 
-                protected override bool OnMouseMove(InputState state)
+                protected override bool OnMouseMove(MouseMoveEventArgs args)
                 {
-                    Child.MoveTo(state.Mouse.Position, 100, Easing.OutQuint);
-                    return base.OnMouseMove(state);
+                    Child.MoveTo(args.MousePosition, 100, Easing.OutQuint);
+                    return base.OnMouseMove(args);
                 }
 
-                protected override bool OnScroll(InputState state)
+                protected override bool OnScroll(ScrollEventArgs args)
                 {
-                    circle.MoveTo(circle.Position - state.Mouse.ScrollDelta * 10).MoveTo(Vector2.Zero, 500, Easing.OutQuint);
-                    return base.OnScroll(state);
+                    circle.MoveTo(circle.Position - args.ScrollDelta * 10).MoveTo(Vector2.Zero, 500, Easing.OutQuint);
+                    return base.OnScroll(args);
                 }
 
-                protected override bool OnMouseDown(InputState state, MouseDownEventArgs args)
+                protected override bool OnMouseDown(MouseDownEventArgs args)
                 {
-                    adjustForMouseDown(state);
-                    return base.OnMouseDown(state, args);
+                    adjustForMouseDown(args.State);
+                    return base.OnMouseDown(args);
                 }
 
-                protected override bool OnMouseUp(InputState state, MouseUpEventArgs args)
+                protected override bool OnMouseUp(MouseUpEventArgs args)
                 {
-                    adjustForMouseDown(state);
-                    return base.OnMouseUp(state, args);
+                    adjustForMouseDown(args.State);
+                    return base.OnMouseUp(args);
                 }
 
                 private void adjustForMouseDown(InputState state)
@@ -588,9 +589,9 @@ namespace osu.Framework.Tests.Visual
                 TextContainer.Add(dragStatus = new SmallText());
             }
 
-            protected override bool OnDragStart(InputState state)
+            protected override bool OnDragStart(DragStartEventArgs args)
             {
-                base.OnDragStart(state);
+                base.OnDragStart(args);
                 return true;
             }
 

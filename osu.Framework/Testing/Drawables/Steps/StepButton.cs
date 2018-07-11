@@ -2,11 +2,11 @@
 // Licensed under the MIT Licence - https://raw.githubusercontent.com/ppy/osu-framework/master/LICENCE
 
 using System;
+using osu.Framework.EventArgs;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.Sprites;
-using osu.Framework.Input;
 using OpenTK.Graphics;
 
 namespace osu.Framework.Testing.Drawables.Steps
@@ -84,7 +84,7 @@ namespace osu.Framework.Testing.Drawables.Steps
             Reset();
         }
 
-        protected override bool OnClick(InputState state)
+        protected override bool OnClick(ClickEventArgs args)
         {
             try
             {

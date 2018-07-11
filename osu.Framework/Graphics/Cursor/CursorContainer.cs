@@ -2,6 +2,7 @@
 // Licensed under the MIT Licence - https://raw.githubusercontent.com/ppy/osu-framework/master/LICENCE
 
 using osu.Framework.Allocation;
+using osu.Framework.EventArgs;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Input;
@@ -32,10 +33,10 @@ namespace osu.Framework.Graphics.Cursor
 
         public override bool ReceiveMouseInputAt(Vector2 screenSpacePos) => true;
 
-        protected override bool OnMouseMove(InputState state)
+        protected override bool OnMouseMove(MouseMoveEventArgs args)
         {
-            ActiveCursor.Position = state.Mouse.Position;
-            return base.OnMouseMove(state);
+            ActiveCursor.Position = args.MousePosition;
+            return base.OnMouseMove(args);
         }
 
         protected override void PopIn()
