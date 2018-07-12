@@ -28,7 +28,10 @@ using osu.Framework.Development;
 using osu.Framework.EventArgs;
 using osu.Framework.MathUtils;
 using OpenTK.Input;
+using JoystickState = osu.Framework.Input.JoystickState;
+using KeyboardState = osu.Framework.Input.KeyboardState;
 using MouseMoveEventArgs = osu.Framework.EventArgs.MouseMoveEventArgs;
+using MouseState = osu.Framework.Input.MouseState;
 
 namespace osu.Framework.Graphics
 {
@@ -1727,7 +1730,7 @@ namespace osu.Framework.Graphics
         public bool TriggerOnClick(InputState state = null, MouseButton button = MouseButton.Left)
         {
             state = state ?? GetContainingInputManager()?.CurrentState;
-            var eventArgs = new ClickEventArgs(state ?? new InputState(), button);
+            var eventArgs = new ClickEventArgs(state ?? new InputState(new KeyboardState(), new MouseState(), new JoystickState()), button);
             return TriggerOnClick(eventArgs);
         }
 
@@ -1836,7 +1839,7 @@ namespace osu.Framework.Graphics
         public bool TriggerOnKeyDown(InputState state, Key key)
         {
             state = state ?? GetContainingInputManager()?.CurrentState;
-            var eventArgs = new KeyDownEventArgs(state ?? new InputState(), key);
+            var eventArgs = new KeyDownEventArgs(state ?? new InputState(new KeyboardState(), new MouseState(), new JoystickState()), key);
             return TriggerOnKeyDown(eventArgs);
         }
 

@@ -14,6 +14,7 @@ using OpenTK.Graphics;
 using OpenTK.Input;
 using KeyboardState = osu.Framework.Input.KeyboardState;
 using MouseState = osu.Framework.Input.MouseState;
+using JoystickState = osu.Framework.Input.JoystickState;
 
 namespace osu.Framework.Tests.Visual
 {
@@ -68,14 +69,10 @@ namespace osu.Framework.Tests.Visual
 
             AddSliderStep("Value", -10.0, 10.0, -10.0, v => sliderBarValue.Value = v);
 
-            AddStep("Click at x = 50", () => sliderBar.TriggerOnClick(new InputState
+            AddStep("Click at x = 50", () =>sliderBar.TriggerOnClick(new InputState(new KeyboardState(), new MouseState()
             {
-                Mouse = new MouseState
-                {
-                    Position = sliderBar.ToScreenSpace(sliderBar.DrawSize / 4)
-                },
-                Keyboard = new KeyboardState()
-            }));
+                Position = sliderBar.ToScreenSpace(sliderBar.DrawSize / 4)
+            }, new JoystickState())));
 
             AddAssert("Value == -6,25", () => sliderBarValue == -6.25);
 
@@ -83,7 +80,7 @@ namespace osu.Framework.Tests.Visual
             {
                 var before = sliderBar.IsHovered;
                 sliderBar.IsHovered = true;
-                sliderBar.TriggerOnKeyDown(new KeyDownEventArgs(new InputState(), Key.Left));
+                sliderBar.TriggerOnKeyDown(new KeyDownEventArgs(null, Key.Left));
                 sliderBar.IsHovered = before;
             });
 
@@ -93,14 +90,10 @@ namespace osu.Framework.Tests.Visual
             {
                 var drawSize = sliderBar.DrawSize;
                 drawSize.X *= 0.75f;
-                sliderBar.TriggerOnClick(new InputState
-                {
-                    Mouse = new MouseState
-                    {
-                        Position = sliderBar.ToScreenSpace(drawSize)
-                    },
-                    Keyboard = new KeyboardState { Keys = { OpenTK.Input.Key.LShift } }
-                });
+                sliderBar.TriggerOnClick(new InputState(
+                    new KeyboardState() { Keys = { OpenTK.Input.Key.LShift } },
+                    new MouseState { Position = sliderBar.ToScreenSpace(drawSize) },
+                    new JoystickState()));
             });
 
             AddAssert("Value == 6", () => sliderBarValue == 6);
