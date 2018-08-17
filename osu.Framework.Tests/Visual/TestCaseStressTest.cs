@@ -3,9 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+using FsCheck;
 using JetBrains.Annotations;
+using Microsoft.FSharp.Collections;
 using osu.Framework.Extensions.Color4Extensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
@@ -23,6 +24,7 @@ namespace osu.Framework.Tests.Visual
     public class StressTest : GridTestCase
     {
         private Action actionOnClick;
+
         protected override bool OnClick(InputState state)
         {
             actionOnClick?.Invoke();
@@ -169,176 +171,77 @@ namespace osu.Framework.Tests.Visual
             }
         }
 
-        public StressTest() : base(1, 2)
+        public StressTest()
+            : base(1, 2)
         {
-            addStressStep();
             AddStep("Case0", AddCase<Case0>);
             AddStep("Case1", AddCase<Case1>);
             AddStep("Case2", AddCase<Case2>);
             AddStep("Case3", AddCase<Case3>);
             AddStep("Case4", AddCase<Case4>);
+
+            var propSize2 = prop(2, 2);
+
+            AddStep("quickCheck(size = 2)", () => Check.Quick(propSize2));
         }
 
-        private int testIndex;
-        private void addStressStep()
-        {
-            AddStep("Reset test index", () => testIndex = 0);
-            AddStep("Stress test", () =>
+        private Property prop(int sizeLo, int sizeUp) =>
+            Prop.ForAll(new ArbitraryScene(sizeLo, sizeUp), scene => Prop.ForAll(new ArbitraryModificationList(new ArbitraryModification(scene)), modifications =>
             {
-                testIndex += 1;
-                var seed = testIndex;
-
-                int size = seed % 5 + 2;
-                const int max_num = 10000;
-
-                IReadOnlyList<ModificationEntry> previousEntries = null;
-                var iter = 0;
-                var rng = new Random(unchecked(seed * 131231));
-                var bestEntries = new ModificationEntry[]{};
-                var prob = 0.5;
-                string description = null;
-                void next(bool ok, IReadOnlyList<ModificationEntry> modifications, RandomTestContainer root)
+                var cell = Cell(0, 0);
+                var instance = new SceneInstance(scene);
+                var container = new Container
                 {
-                    if (description == null)
-                        description = GetSceneDescription(root);
-                    Remove(root);
+                    Child = instance.Root,
+                    Size = new Vector2(250),
+                    Anchor = Anchor.Centre,
+                    Origin = Anchor.TopLeft,
+                };
 
-                    var num = modifications.Count;
-                    iter += 1;
-
-                    if (ok)
-                    {
-                        Console.WriteLine($"{seed},{size}-{iter} Uncatched: {num}");
-
-                        if (iter == 1) return;
-
-                        modifications = previousEntries;
-                        num = modifications.Count;
-                        prob *= 0.95;
-                    }
-                    else
-                    {
-                        Console.WriteLine($"{seed},{size}-{iter} Catched: {num}");
-                        if (bestEntries.Length == 0 || num < bestEntries.Length)
-                            bestEntries = modifications.ToArray();
-                        prob /= 0.95;
-                    }
-
-                    if (iter < 1000 && prob > 0.001)
-                    {
-                        previousEntries = modifications;
-
-                        ModificationEntry[] newEntries;
-
-                        do
-                        {
-                            newEntries = modifications.Take(num - 1).Where(entry => rng.NextDouble() >= prob).Append(modifications.Last()).ToArray();
-                        } while (newEntries.Length == modifications.Count);
-
-                        RunTestCase(seed, size, num, newEntries, next);
-                    }
-                    else
-                    {
-                        Console.WriteLine();
-                        foreach (var entry in bestEntries)
-                        {
-                            Console.WriteLine($"{entry.Container.Name}.{entry.Name} = {entry.Val};");
-                        }
-                        Console.WriteLine();
-
-                        RunTestCase(seed, size, num, bestEntries, (a, b, c) => { });
-                    }
-                }
-
-                RunTestCase(seed, size, max_num, null, next);
-            });
-        }
-
-        public void RunTestCase(int seed, int size, int maxModifications, IReadOnlyList<ModificationEntry> entries, Action<bool, IReadOnlyList<ModificationEntry>, RandomTestContainer> cont)
-        {
-            var sceneGenerator = new RandomSceneGenerator(new Random(seed));
-            var root = sceneGenerator.Generate(size);
-            Add(root);
-            root.Schedule(() =>
-            {
-                SetName(root);
-
-                var containerMap = new Dictionary<string, Container>();
-                void generateContainerMap(Container c)
+                try
                 {
-                    containerMap.Add(c.Name, c);
-                    foreach (var child in c.Children.OfType<Container>())
-                        generateContainerMap(child);
-                }
+                    cell.Child = container;
+                    cell.UpdateSubTree();
 
-                generateContainerMap(root);
-
-                if (entries == null)
-                {
-                    var modificationGenerator = new RandomModificationGenerator(new Random(seed));
-                    for (int j = 0; j < maxModifications; j++)
+                    foreach (var entry in modifications)
                     {
-                        modificationGenerator.ModifyRandomly(root);
+                        if (!instance.Execute(entry)) continue;
 
-                        if (!Check(root))
+                        if (!instance.CheckStateValidity())
                         {
-                            cont(false, modificationGenerator.Modifications, root);
-                            return;
+                            return false;
                         }
                     }
-
-                    cont(true, modificationGenerator.Modifications, root);
                 }
-                else
+                finally
                 {
-                    var newEntries = new List<ModificationEntry>();
-                    foreach (var entry in entries)
-                    {
-                        var newEntry = entry;
-                        newEntry.Container = containerMap[entry.Container.Name];
-
-                        newEntry.Execute();
-                        newEntries.Add(newEntry);
-
-                        if (!Check(root))
-                        {
-                            cont(false, newEntries, root);
-                            return;
-                        }
-                    }
-
-                    cont(true, newEntries, root);
+                    cell.Remove(container);
+                    container.Remove(container.Child);
                 }
-            });
-        }
 
-        public bool Check(RandomTestContainer root)
+                return true;
+            }));
+
+        public class ArbitraryModificationList : Arbitrary<SceneModification[]>
         {
-            root.UpdateSubTree();
-            root.ValidateSubTree();
+            private readonly Arbitrary<SceneModification> elemArbitrary;
 
-            var state1 = GetState(root);
-
-            RecalculateState(root);
-
-            var state2 = GetState(root);
-
-            var eq = state1.Count == state2.Count && Enumerable.Range(0, state1.Count).All(i => Precision.AlmostEquals(state1[i], state2[i]));
-
-            if (!eq)
+            public ArbitraryModificationList(Arbitrary<SceneModification> elemArbitrary)
             {
-                Console.WriteLine($"{string.Join(",", state1)} vs {string.Join(",", state2)}");
+                this.elemArbitrary = elemArbitrary;
             }
-            return eq;
+
+            public override Gen<SceneModification[]> Generator => Gen.ListOf(elemArbitrary.Generator).Select(x => x.ToArray());
+
+            public override IEnumerable<SceneModification[]> Shrinker(SceneModification[] list) =>
+                list.Select(elem => list.Where(x => x != elem).ToArray()).Concat(
+                    list.SelectMany(elem => elemArbitrary.Shrinker(elem).Select(newElem => list.Select(x => x == elem ? newElem : x).ToArray())));
         }
 
-        public class RandomTestContainer : Container
+        public class TestContainer : Container
         {
-            public readonly int DecendantCount;
-
-            public RandomTestContainer(int size)
+            public TestContainer()
             {
-                DecendantCount = size;
                 Size = new Vector2(1);
                 AlwaysPresent = true;
             }
@@ -346,267 +249,350 @@ namespace osu.Framework.Tests.Visual
             protected override bool ComputeIsMaskedAway(RectangleF maskingBounds) => false;
         }
 
-        public struct ModificationEntry
+        public class SceneModification
         {
-            public Container Container;
-            public string Name;
-            public object Val;
+            public readonly string NodeName;
+            public readonly string PropertyName;
+            public readonly object Value;
 
-            public void Execute()
+            public SceneModification(string nodeName, string propertyName, object value)
             {
-                switch (Name)
+                NodeName = nodeName;
+                PropertyName = propertyName;
+                Value = value;
+            }
+
+            public override string ToString()
+            {
+                return $"{NodeName}.{PropertyName} = {formatValue(Value)}";
+            }
+
+            private string formatValue(object value)
+            {
+                switch (value)
+                {
+                    case MarginPadding x:
+                        return $"new MarginPadding {{Top={x.Top},Left={x.Left},Bottom={x.Bottom},Right={x.Right}}}";
+                    case Anchor _:
+                    case Axes _:
+                    case FillMode _:
+                        return $"{value.GetType().Name}.{value}";
+                    case Vector2 vec:
+                        return $"new Vector2({vec.X}, {vec.Y})";
+                    default:
+                        return value.ToString();
+                }
+            }
+        }
+
+        public class SceneNode
+        {
+            public readonly SceneNode[] Children;
+            public readonly int TreeSize;
+            public string Name = "Node";
+
+            public SceneNode(IEnumerable<SceneNode> children)
+            {
+                Children = children.ToArray();
+                TreeSize = 1 + Children.Select(c => c.TreeSize).Sum();
+            }
+
+            public override string ToString()
+            {
+                return $"{Name} {{{string.Join(", ", Children.Select(x => x.ToString()))}}}";
+            }
+        }
+
+        public class Scene
+        {
+            private readonly List<SceneNode> nodes;
+            public IReadOnlyList<SceneNode> Nodes => nodes;
+            public SceneNode Root => Nodes.First();
+
+            public Scene([NotNull] SceneNode root)
+            {
+                if (root == null) throw new ArgumentNullException(nameof(root));
+                nodes = new List<SceneNode>();
+
+                var depthMap = new Dictionary<object, int>();
+
+                void enumNodes(SceneNode node, int depth)
+                {
+                    depthMap[node] = depth;
+                    nodes.Add(node);
+                    foreach (var child in node.Children)
+                        enumNodes(child, depth + 1);
+                }
+
+                enumNodes(root, 0);
+
+                foreach (var group in Nodes.GroupBy(c => depthMap[c]))
+                {
+                    var depth = group.Key;
+                    var array = group.ToArray();
+                    string prefix = depth == 0 ? "Root" : string.Join("", Enumerable.Repeat("Grand", depth - 1)) + "Child";
+                    int index = 1;
+                    foreach (var node in array)
+                    {
+                        node.Name = array.Length == 1 ? prefix : prefix + index;
+                        ++index;
+                    }
+                }
+            }
+
+            public override string ToString()
+            {
+                return $"Scene({Root})";
+            }
+        }
+
+        public class ArbitraryScene : Arbitrary<Scene>
+        {
+            public readonly int SizeLo, SizeUp;
+
+            public ArbitraryScene(int sizeLo, int sizeUp)
+            {
+                SizeLo = sizeLo;
+                SizeUp = sizeUp;
+            }
+
+            public override Gen<Scene> Generator => Gen.Choose(SizeLo, SizeUp).SelectMany(gen).Select(root => new Scene(root));
+
+            private static Gen<SceneNode> gen(int treeSize) =>
+                genChildren(treeSize - 1).Select(children => new SceneNode(children));
+
+            private static Gen<FSharpList<SceneNode>> genChildren(int treeSize) => treeSize == 0
+                ? Gen.Constant(FSharpList<SceneNode>.Empty)
+                : Gen.Choose(1, treeSize).SelectMany(childSize => gen(childSize).SelectMany(head =>
+                    genChildren(treeSize - childSize).Select(tail => FSharpList<SceneNode>.Cons(head, tail))));
+        }
+
+        public class ArbitraryModification : Arbitrary<SceneModification>
+        {
+            public readonly Scene Scene;
+
+            public ArbitraryModification(Scene scene)
+            {
+                Scene = scene;
+            }
+
+            public override Gen<SceneModification> Generator => gen_for(Scene);
+
+            public override IEnumerable<SceneModification> Shrinker(SceneModification modification)
+            {
+                return shrink(modification.Value, positiveProperties.Contains(modification.PropertyName))
+                    .Select(newValue => new SceneModification(modification.NodeName, modification.PropertyName, newValue));
+            }
+
+            private readonly HashSet<string> positiveProperties = new HashSet<string>(new[] { nameof(Width), nameof(Height), nameof(Scale) });
+
+            private IEnumerable<float> shrink_float(float x)
+            {
+                if (x == 0) yield break;
+                yield return 0;
+                if (x == 1) yield break;
+                yield return 1;
+                if (x > 0 || x == -1) yield break;
+                yield return -x;
+            }
+
+            private IEnumerable<T[]> shrink_tuple<T>(T[] tuple, Func<T, IEnumerable<T>> shrinkElem)
+            {
+                for (int i = 0; i < tuple.Length; i++)
+                {
+                    foreach (var newElem in shrinkElem(tuple[i]))
+                    {
+                        yield return tuple.Take(i).Concat(tuple.Skip(i).Prepend(newElem)).ToArray();
+                    }
+                }
+            }
+
+            private IEnumerable<object> shrink(object value, bool positive = false)
+            {
+                switch (value)
+                {
+                    case int x:
+                        return Arb.Shrink(x).Cast<object>();
+                    case float x:
+                        return shrink_float(x).Where(f => f > 0 || !positive).Cast<object>();
+                    case Vector2 v:
+                        return shrink_tuple(new[] { v.X, v.Y }, x => shrink_float(x).Where(f => f > 0 || !positive)).Select(t => (object)new Vector2(t[0], t[1]));
+                    case MarginPadding m:
+                        return shrink_tuple(new[] { m.Top, m.Left, m.Bottom, m.Right }, shrink_float).Select(t => (object)new MarginPadding { Top = t[0], Left = t[1], Bottom = t[2], Right = t[3] });
+                    case Axes x:
+                        return new[] { x & ~Axes.X, x & ~Axes.Y }.Distinct().Where(y => y != x).Cast<object>();
+                    default:
+                        return Enumerable.Empty<object>();
+                }
+            }
+
+            private struct Entry
+            {
+                public readonly string PropertyName;
+                public readonly object Value;
+
+                public Entry(string propertyName, object value)
+                {
+                    PropertyName = propertyName;
+                    Value = value;
+                }
+            }
+
+            private static Gen<SceneModification> gen_for(Scene scene) =>
+                Gen.Choose(0, scene.Nodes.Count - 1).SelectMany(nodeIndex =>
+                {
+                    var node = scene.Nodes[nodeIndex];
+                    return for_container.Select(pair => new SceneModification(node.Name, pair.PropertyName, pair.Value));
+                });
+
+            private static readonly Gen<float> position = Arb.Generate<NormalFloat>().Select(x => (float)x);
+            private static readonly Gen<float> size = Arb.Generate<NormalFloat>().Select(x => (float)x).Where(x => x > 0);
+            private static readonly Gen<float> rotation = Arb.Generate<NormalFloat>().Select(x => (float)x * 120);
+
+            private static readonly Gen<Anchor> anchor = Gen.OneOf(new[]
+            {
+                Anchor.TopLeft,
+                Anchor.TopCentre,
+                Anchor.TopRight,
+                Anchor.CentreLeft,
+                Anchor.Centre,
+                Anchor.CentreRight,
+                Anchor.BottomLeft,
+                Anchor.BottomCentre,
+                Anchor.BottomRight
+            }.Select(Gen.Constant));
+
+            private static readonly Gen<Axes> axes = Gen.OneOf(new[] { Axes.None, Axes.X, Axes.Y, Axes.Both }.Select(Gen.Constant));
+            private static readonly Gen<FillMode> fillmode = Gen.OneOf(new[] { FillMode.Fill, FillMode.Fit, FillMode.Stretch }.Select(Gen.Constant));
+
+            private static Gen<Vector2> vec(Gen<float> gen) => Gen.Two(gen).Select(t => new Vector2(t.Item1, t.Item2));
+
+            private static Gen<MarginPadding> marginpadding(Gen<float> gen) => Gen.Four(gen).Select(t => new MarginPadding
+            {
+                Top = t.Item1,
+                Left = t.Item2,
+                Bottom = t.Item3,
+                Right = t.Item4
+            });
+
+            private static Gen<Entry> entry<T>(string propertyName, Gen<T> gen) => gen.Select(x => new Entry(propertyName, x));
+
+            private static readonly Gen<Entry> for_container = Gen.OneOf(
+                entry(nameof(X), position),
+                entry(nameof(Y), position),
+                entry(nameof(Width), size),
+                entry(nameof(Height), size),
+                entry(nameof(Margin), marginpadding(position)),
+                entry(nameof(Padding), marginpadding(position)),
+                entry(nameof(Origin), anchor),
+                entry(nameof(Anchor), anchor),
+                entry(nameof(RelativeSizeAxes), axes),
+                entry(nameof(AutoSizeAxes), axes),
+                entry(nameof(RelativePositionAxes), axes),
+                entry(nameof(BypassAutoSizeAxes), axes),
+                entry(nameof(FillMode), fillmode),
+                entry(nameof(Scale), vec(size)),
+                entry(nameof(Rotation), rotation),
+                entry(nameof(Shear), vec(position))
+            );
+        }
+
+        public class SceneInstance
+        {
+            private readonly List<TestContainer> nodes;
+            public IReadOnlyList<TestContainer> Nodes => nodes;
+            public TestContainer Root => Nodes.First();
+
+            private readonly Dictionary<string, TestContainer> nodeMap;
+            public TestContainer GetNode(string name) => nodeMap[name];
+
+            public SceneInstance(Scene scene)
+            {
+                nodes = new List<TestContainer>();
+                nodeMap = new Dictionary<string, TestContainer>();
+
+                TestContainer createInstanceTree(SceneNode node)
+                {
+                    var container = new TestContainer { Name = node.Name };
+
+                    nodes.Add(container);
+                    nodeMap.Add(node.Name, container);
+
+                    foreach (var child in node.Children)
+                        container.Add(createInstanceTree(child));
+                    return container;
+                }
+
+                createInstanceTree(scene.Root);
+            }
+
+            public bool CanExecute(SceneModification modification)
+            {
+                var container = GetNode(modification.NodeName);
+                var value = modification.Value;
+
+                switch (modification.PropertyName)
                 {
                     case nameof(Drawable.RelativeSizeAxes):
-                        if ((Container.AutoSizeAxes & (Axes)Val) > 0) return;
-                        break;
+                        return (container.AutoSizeAxes & (Axes)value) == 0;
                     case nameof(CompositeDrawable.AutoSizeAxes):
-                        if ((Container.RelativeSizeAxes & (Axes)Val) > 0) return;
-                        break;
+                        return (container.RelativeSizeAxes & (Axes)value) == 0;
                     case nameof(Drawable.Width):
-                        if ((Container.AutoSizeAxes & Axes.X) > 0) return;
-                        break;
+                        return (container.AutoSizeAxes & Axes.X) == 0;
                     case nameof(Drawable.Height):
-                        if ((Container.AutoSizeAxes & Axes.Y) > 0) return;
-                        break;
+                        return (container.AutoSizeAxes & Axes.Y) == 0;
+                    default:
+                        return true;
                 }
-                Container.Set(Name, Val);
-            }
-        }
-
-        public class RandomModificationGenerator
-        {
-            private readonly Random rng;
-
-            public RandomModificationGenerator(Random rng)
-            {
-                this.rng = rng;
             }
 
-            private RandomTestContainer currentContainer;
-            private readonly List<ModificationEntry> modifications = new List<ModificationEntry>();
-            public IReadOnlyList<ModificationEntry> Modifications => modifications;
-
-            private T modify<T>(string name, T val)
+            public bool Execute(SceneModification modification)
             {
-                var entry = new ModificationEntry
-                {
-                    Container = currentContainer,
-                    Name = name,
-                    Val = val
-                };
-                currentEntries.Add(entry);
-                entry.Execute();
+                if (!CanExecute(modification)) return false;
 
-                return val;
+                var container = GetNode(modification.NodeName);
+                container.Set(modification.PropertyName, modification.Value);
+                return true;
             }
 
-            private readonly List<ModificationEntry> currentEntries = new List<ModificationEntry>();
-            public ModificationEntry[] ModifyRandomly(RandomTestContainer root)
+            private float[] getState()
             {
-                var target = rng.Next(0, root.DecendantCount);
-                if (target != 0)
+                return Nodes.SelectMany(c =>
                 {
-                    target -= 1;
-                    foreach (var child in root.Children.OfType<RandomTestContainer>())
-                    {
-                        if (target < child.DecendantCount)
-                        {
-                            return ModifyRandomly(child);
-                        }
-
-                        target -= child.DecendantCount;
-                    }
-
-                    Trace.Assert(false);
-                }
-
-                Anchor randomAnchor() => new[] { Anchor.TopLeft, Anchor.Centre, Anchor.BottomRight }[rng.Next(3)];
-                float randomPosition() => rng.Next(-3, 4) * 0.5f;
-                float randomSize() => rng.Next(1, 6) * 0.5f;
-                FillMode randomFillMode() => new[] { FillMode.Fill, FillMode.Fit, FillMode.Stretch }[rng.Next(3)];
-                Vector2 randomScale() => new Vector2(rng.Next(1, 4) * 0.5f, rng.Next(1, 4) * 0.5f);
-                MarginPadding randomMarginPadding() => new MarginPadding
-                {
-                    Top = rng.Next(0, 4) * 0.5f,
-                    Left = rng.Next(0, 4) * 0.5f,
-                    Bottom = rng.Next(0, 4) * 0.5f,
-                    Right = rng.Next(0, 4) * 0.5f
-                };
-
-                float randomRotation() => rng.Next(-12, 13) * 30;
-                Vector2 randomShear() => new Vector2(rng.Next(0, 4) * 0.5f, rng.Next(0, 4) * 0.5f);
-
-                Axes randomAxes() => (Axes)rng.Next(4);
-
-                currentContainer = root;
-                currentEntries.Clear();
-
-                var t = rng.Next(16);
-                switch (t)
-                {
-                    case 0:
-                    case 1:
-                        modify(t == 0 ? nameof(root.Origin) : nameof(root.Anchor), randomAnchor());
-                        break;
-                    case 2:
-                    case 3:
-                        modify(t == 2 ? nameof(root.X) : nameof(root.Y), randomPosition());
-                        break;
-                    case 4:
-                    case 5:
-                        modify(t == 4 ? nameof(root.Width) : nameof(root.Height), randomSize());
-                        break;
-                    case 6:
-                        modify(nameof(root.FillMode), randomFillMode());
-                        break;
-                    case 7:
-                        modify(nameof(root.Scale), randomScale());
-                        break;
-                    case 8:
-                        modify(nameof(root.Margin), randomMarginPadding());
-                        break;
-                    case 9:
-                        modify(nameof(root.Padding), randomMarginPadding());
-                        break;
-                    case 10:
-                        modify(nameof(root.RelativeSizeAxes), randomAxes());
-                        break;
-                    case 11:
-                        modify(nameof(root.AutoSizeAxes), randomAxes());
-                        break;
-                    case 12:
-                        modify(nameof(root.RelativePositionAxes), randomAxes());
-                        break;
-                    case 13:
-                        modify(nameof(root.BypassAutoSizeAxes), randomAxes());
-                        break;
-                    case 14:
-                        modify(nameof(root.Rotation), randomRotation());
-                        break;
-                    case 15:
-                        modify(nameof(root.Shear), randomShear());
-                        break;
-                }
-
-                var array = currentEntries.ToArray();
-                modifications.AddRange(array);
-                return array;
-            }
-        }
-
-        public void RecalculateState(Drawable root)
-        {
-            void invalidate(Drawable c)
-            {
-                c.Invalidate();
-                if (!(c is Container container)) return;
-                foreach (var child in container.Children)
-                    invalidate(child);
+                    var size = c.DrawSize;
+                    var position = c.DrawPosition;
+                    if (size.X == 0 || size.Y == 0) return new float[] { 0, 0, 0, 0 };
+                    return new[] { size.X, size.Y, position.X, position.Y };
+                }).ToArray();
             }
 
-            invalidate(root);
-            root.UpdateSubTree();
-            root.ValidateSubTree();
-        }
-
-        public IReadOnlyList<float> GetState(RandomTestContainer root)
-        {
-            var list = new List<float>();
-            void rec(RandomTestContainer c)
+            private void recalculateState()
             {
-                var size = c.DrawSize;
-                var position = c.DrawPosition;
-                list.Add(size.X);
-                list.Add(size.Y);
-                list.Add(position.X);
-                list.Add(position.Y);
-                for (int i = 0; i < 9; i++)
-                {
-                    //list.Add(c.DrawInfo.Matrix[i / 3, i % 3]);
-                }
-
-                foreach (var child in c.Children.OfType<RandomTestContainer>())
-                    rec(child);
-            }
-            rec(root);
-            return list;
-        }
-
-
-        public void SetName(RandomTestContainer c)
-        {
-            if (!(c.Parent is RandomTestContainer p))
-                c.Name = "root";
-            else
-                c.Name = (p.Name == "root" ? "" : p.Name + ".") + "c" + c.ChildID;
-            foreach (var child in c.Children.OfType<RandomTestContainer>())
-                SetName(child);
-        }
-
-        public string GetSceneDescription(RandomTestContainer root)
-        {
-            List<string> list = new List<string>();
-            /*
-            void rec(RandomTestContainer c)
-            {
-                var childNames = new List<string>();
-                foreach (var child in c.Children.OfType<RandomTestContainer>())
-                {
-                    rec(child);
-                    childNames.Add(child.Name);
-                }
-
-                list.Add($"var {c.Name} = new {nameof(Container)}");
-                if (childNames.Count == 0)
-                {
-                    list.Add("()");
-                }
-                else if (childNames.Count == 1)
-                {
-                    list.Add($"{{{nameof(c.Child)} = {childNames[0]}}}");
-                }
-                else
-                {
-                    list.Add($" {{{nameof(c.Children)} = new {nameof(Drawable)}[] {{{string.Join(", ", childNames)}}}}}");
-                }
-                list.Add(";\n");
-                list.Add($"{c.Name}.{nameof(c.Name)} = \"{c.Name}\";\n");
-            }
-            */
-
-            void rec(RandomTestContainer c)
-            {
-                list.Add($"{c.Name}: [{string.Join(", ", c.Children.Select(x => x.Name))}]\n");
-                foreach (var child in c.Children.OfType<RandomTestContainer>())
-                    rec(child);
+                foreach (var node in Nodes)
+                    node.Invalidate();
+                Root.UpdateSubTree();
+                Root.ValidateSubTree();
             }
 
-            rec(root);
-            return string.Join("", list);
-        }
+            public float[] LastState1, LastState2;
 
-        public class RandomSceneGenerator
-        {
-            private readonly Random rng;
-
-            public RandomSceneGenerator(Random rng)
+            public bool CheckStateValidity()
             {
-                this.rng = rng;
-            }
+                if (!Root.IsLoaded) throw new InvalidOperationException("The scene isn't loaded");
 
-            public RandomTestContainer Generate(int size, string parentName = "")
-            {
-                var container = new RandomTestContainer(size);
-                size -= 1;
-                while (size > 0)
-                {
-                    var childSize = rng.Next(1, size + 1);
-                    var child = Generate(childSize, container.Name);
-                    container.Add(child);
-                    size -= childSize;
-                }
+                Root.UpdateSubTree();
+                Root.ValidateSubTree();
 
-                return container;
+                var state1 = getState();
+
+                recalculateState();
+
+                var state2 = getState();
+
+                LastState1 = state1;
+                LastState2 = state2;
+
+                return state1.Length == state2.Length && Enumerable.Range(0, state1.Length).All(i => Precision.AlmostEquals(state1[i], state2[i]));
             }
         }
     }
