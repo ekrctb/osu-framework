@@ -7,13 +7,14 @@ using System.Linq;
 using FsCheck;
 using JetBrains.Annotations;
 using Microsoft.FSharp.Collections;
+using Microsoft.FSharp.Core;
+using NUnit.Framework;
 using osu.Framework.Extensions.Color4Extensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Primitives;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Input.States;
-using osu.Framework.MathUtils;
 using osu.Framework.Testing;
 using osu.Framework.Tests.Layout;
 using OpenTK;
@@ -23,11 +24,12 @@ namespace osu.Framework.Tests.Visual
 {
     public class StressTest : GridTestCase
     {
-        // Keep (AutoSizeAxes & (Child.RelativeSizeAxes | Child.RelativePositionAxes)) to 0
-        public static bool ForbidAutoSizeUndefinedCase = true;
-        public static bool NoPadding = true;
-        public static bool NoRotation = true;
-        public static bool NoShear = true;
+        // disable certain cases to discover more cases
+        public static bool ForbidAutoSizeUndefinedCase = true; // keep (AutoSizeAxes & (Child.RelativeSizeAxes | Child.RelativePositionAxes)) to 0
+        public static bool NoPadding = false;
+        public static bool NoRotation = false;
+        public static bool NoShear = false;
+        public static bool NoBypassAutosizeAxes = false;
 
         private Action actionOnClick;
 
@@ -44,24 +46,26 @@ namespace osu.Framework.Tests.Visual
             public virtual float Scale => 1;
         }
 
-        public void AddCase<TCase>() where TCase : InvalidationFailureCase, new()
+        public void SetCase(Func<InvalidationFailureCase> factory)
         {
-            var instance1 = new TCase();
-            var instance2 = new TCase();
+            var instance1 = factory();
+            var instance2 = factory();
 
             for (int i = 0; i < 2; i++)
             {
                 var instance = i == 0 ? instance1 : instance2;
-                var cell = Cell(0, i);
-                cell.Scale = new Vector2(instance.Scale);
-                cell.AlwaysPresent = true;
-                cell.Child = new Container
+                Cell(0, i).Child = new Container
                 {
-                    Child = instance.Drawables.First(),
                     Size = new Vector2(250),
                     Anchor = Anchor.Centre,
                     Origin = Anchor.TopLeft,
-                    Name = i == 0 ? "WithoutInvalidation" : "WithInvalidation"
+                    Name = i == 0 ? "WithoutInvalidation" : "WithInvalidation",
+                    Child = new Container
+                    {
+                        Scale = new Vector2(instance.Scale),
+                        AlwaysPresent = true,
+                        Child = instance.Drawables.First()
+                    }
                 };
 
                 var index = 0;
@@ -71,7 +75,7 @@ namespace osu.Framework.Tests.Visual
                     {
                         RelativeSizeAxes = Axes.Both,
                         Size = new Vector2(1),
-                        Colour = (index == 0 ? Color4.Red : Color4.Blue).Opacity(.5f),
+                        Colour = (index == 0 ? Color4.Red : index == 1 ? Color4.Blue : index == 2 ? Color4.Green : Color4.Yellow).Opacity(.5f),
                         Depth = -1,
                     });
                     index += 1;
@@ -215,41 +219,130 @@ namespace osu.Framework.Tests.Visual
             }
         }
 
-        public class Case7 : SizeTwoCase
+        public class GeneralCase : InvalidationFailureCase
         {
-            public Case7()
+            public readonly Scene Scene;
+            public readonly SceneModification[] Modifications;
+            public readonly SceneInstance Instance;
+
+            public override IEnumerable<Drawable> Drawables => Instance.Nodes;
+            public override float Scale { get; }
+
+            public GeneralCase(Scene scene, SceneModification[] modifications, float scale = 1)
             {
-                Root.Width = 2; Child.Scale = new Vector2(0.6666667f, 1);
-                Child.Anchor = Anchor.TopRight;
-                Child.Margin = new MarginPadding {Top=-1,Left=0.5f,Bottom=0,Right=0};
+                Scale = scale;
+                Scene = scene;
+                Modifications = modifications;
+                Instance = new SceneInstance(scene);
+
+                foreach (var entry in modifications.Take(modifications.Length - 1))
+                    Instance.Execute(entry);
             }
 
             public override void DoModification()
             {
-                Root.AutoSizeAxes = Axes.X;
+                Instance.Execute(Modifications.Last());
             }
+        }
+
+        private void addCaseStep<T>() where T : InvalidationFailureCase, new()
+        {
+            AddStep($"{typeof(T).Name}", () => SetCase(() => new T()));
+        }
+
+        private void addGeneralCase(string name, Scene scene, SceneModification[] modifications, float scale)
+        {
+            AddStep(name, () =>
+            {
+                var res = runTest(scene, modifications);
+                Assert.False(res);
+
+                SetCase(() => new GeneralCase(scene, modifications, scale));
+            });
         }
 
         public StressTest()
             : base(1, 2)
         {
-            AddStep("Case0", AddCase<Case0>);
-            AddStep("Case1", AddCase<Case1>);
-            AddStep("Case2", AddCase<Case2>);
-            AddStep("Case3", AddCase<Case3>);
-            AddStep("Case4", AddCase<Case4>);
-            AddStep("Case5", AddCase<Case5>);
-            AddStep("Case6", AddCase<Case6>);
-            AddStep("Case7", AddCase<Case7>);
+            addCaseStep<Case0>();
+            addCaseStep<Case1>();
+            addCaseStep<Case2>();
+            addCaseStep<Case3>();
+            addCaseStep<Case4>();
+            addCaseStep<Case5>();
+            addCaseStep<Case6>();
 
-            var propSize2 = prop(2, 2);
+            addGeneralCase("Case8",
+                new Scene(new SceneNode(new[] { new SceneNode(new SceneNode[] { }), new SceneNode(new SceneNode[] { }) })),
+                new[]
+                {
+                    new SceneModification("Root", nameof(AutoSizeAxes), Axes.X),
+                    new SceneModification("Child2", nameof(Anchor), Anchor.CentreRight),
+                    new SceneModification("Child1", nameof(BypassAutoSizeAxes), Axes.X)
+                },
+                100);
 
-            AddRepeatStep("quickCheck", () => Check.QuickThrowOnFailure(prop(2, 5)), 100);
-            AddRepeatStep("quickCheck(size = 2)", () => Check.QuickThrowOnFailure(propSize2), 100);
+            var qc = Config.Quick;
+            var config = new Config(1000, 0, qc.Replay, qc.Name, 1, 1000, qc.QuietOnSuccess, qc.Every, qc.EveryShrink, qc.Arbitrary, new MyRunner
+            {
+                OnCounterCaseFound = onCounterCaseFound
+            });
+
+            foreach (var i in new[] { 2, 3, 10 })
+            {
+                var size = i;
+                AddStep($"quickCheck({i})", () => Check.One(config, prop(size)));
+            }
         }
 
-        private Property prop(int sizeLo, int sizeUp) =>
-            Prop.ForAll(new ArbitraryScene(sizeLo, sizeUp), scene => Prop.ForAll(new ArbitraryModificationList(new ArbitraryModification(scene)), modifications => runTest(scene, modifications)));
+        private void onCounterCaseFound(Scene scene, SceneModification[] modifications)
+        {
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine($"addGeneralCase(\"Case\",\n\t{scene.GetCode()},\n\tnew[] {{{string.Join(", ", modifications.Select(x => x.GetCode()))}}},\n\t100);");
+            Console.WriteLine();
+        }
+
+        public class MyRunner : IRunner
+        {
+            private readonly IRunner runner;
+            public Action<Scene, SceneModification[]> OnCounterCaseFound;
+
+            public MyRunner()
+            {
+                runner = Config.QuickThrowOnFailure.Runner;
+            }
+
+            public void OnStartFixture(Type t)
+            {
+                runner.OnStartFixture(t);
+            }
+
+            public void OnArguments(int nTest, FSharpList<object> args, FSharpFunc<int, FSharpFunc<FSharpList<object>, string>> every)
+            {
+                runner.OnArguments(nTest, args, every);
+            }
+
+            public void OnShrink(FSharpList<object> args, FSharpFunc<FSharpList<object>, string> everyShrink)
+            {
+                runner.OnShrink(args, everyShrink);
+            }
+
+            public void OnFinished(string name, TestResult testResult)
+            {
+                if (testResult is TestResult.False r)
+                {
+                    var shrunkArgs = r.Item3;
+                    if (shrunkArgs.Length == 1 && shrunkArgs[0] is SceneAndModifications s)
+                        OnCounterCaseFound?.Invoke(s.Scene, s.Modifications);
+                }
+
+                runner.OnFinished(name, testResult);
+            }
+        }
+
+        private Property prop(int size) =>
+            Prop.ForAll(new ArbitrarySceneAndModifications(size), s => runTest(s.Scene, s.Modifications));
 
         private bool runTest(Scene scene, SceneModification[] modifications)
         {
@@ -285,6 +378,54 @@ namespace osu.Framework.Tests.Visual
             }
 
             return true;
+        }
+
+        public struct SceneAndModifications
+        {
+            public readonly Scene Scene;
+            public readonly SceneModification[] Modifications;
+
+            public SceneAndModifications(Scene scene, SceneModification[] modifications)
+            {
+                Scene = scene;
+                Modifications = modifications;
+            }
+
+            public override string ToString()
+            {
+                return $"({Scene}, {string.Join(", ", Modifications.Select(x => x.ToString()))})";
+            }
+        }
+
+        public class ArbitrarySceneAndModifications : Arbitrary<SceneAndModifications>
+        {
+            private readonly ArbitraryScene arbitraryScene;
+
+            public ArbitrarySceneAndModifications(int size)
+            {
+                arbitraryScene = new ArbitraryScene(size, size);
+            }
+
+            public override Gen<SceneAndModifications> Generator => arbitraryScene.Generator.SelectMany(scene =>
+            {
+                var arbitraryModificationList = new ArbitraryModificationList(new ArbitraryModification(scene));
+                return arbitraryModificationList.Generator.Select(modifications => new SceneAndModifications(scene, modifications));
+            });
+
+            public override IEnumerable<SceneAndModifications> Shrinker(SceneAndModifications s)
+            {
+                foreach (var newScene in arbitraryScene.Shrinker(s.Scene))
+                {
+                    if (s.Modifications.Any(m => newScene.Nodes.All(node => node.Name != m.NodeName)))
+                        continue;
+                    yield return new SceneAndModifications(newScene, s.Modifications);
+                }
+
+                var arbitraryModificationList = new ArbitraryModificationList(new ArbitraryModification(s.Scene));
+
+                foreach (var newModification in arbitraryModificationList.Shrinker(s.Modifications))
+                    yield return new SceneAndModifications(s.Scene, newModification);
+            }
         }
 
         public class ArbitraryModificationList : Arbitrary<SceneModification[]>
@@ -336,18 +477,22 @@ namespace osu.Framework.Tests.Visual
             {
                 switch (value)
                 {
+                    case float x:
+                        return x == (int)x ? ((int)x).ToString() : $"{x}f";
+                    case Vector2 vec:
+                        return $"new Vector2({formatValue(vec.X)}, {formatValue(vec.Y)})";
                     case MarginPadding x:
-                        return $"new MarginPadding {{Top={x.Top},Left={x.Left},Bottom={x.Bottom},Right={x.Right}}}";
+                        return $"new MarginPadding {{Top={formatValue(x.Top)},Left={formatValue(x.Left)},Bottom={formatValue(x.Bottom)},Right={formatValue(x.Right)}}}";
                     case Anchor _:
                     case Axes _:
                     case FillMode _:
                         return $"{value.GetType().Name}.{value}";
-                    case Vector2 vec:
-                        return $"new Vector2({vec.X}, {vec.Y})";
                     default:
                         return value.ToString();
                 }
             }
+
+            public string GetCode() => $"new {nameof(SceneModification)}(\"{NodeName}\", nameof({PropertyName}), {formatValue(Value)})";
         }
 
         public class SceneNode
@@ -366,6 +511,8 @@ namespace osu.Framework.Tests.Visual
             {
                 return $"{Name} {{{string.Join(", ", Children.Select(x => x.ToString()))}}}";
             }
+
+            public string GetCode() => $"new {nameof(SceneNode)}(new{(Children.Length != 0 ? "" : " " + nameof(SceneNode))}[]{{{string.Join(", ", Children.Select(x => x.GetCode()))}}})";
         }
 
         public class Scene
@@ -409,6 +556,25 @@ namespace osu.Framework.Tests.Visual
             {
                 return $"Scene({Root})";
             }
+
+            public string GetCode()
+            {
+                return $"new {nameof(Scene)}({Root.GetCode()})";
+            }
+        }
+
+        public class SceneTreeComparator : IEqualityComparer<SceneNode>
+        {
+            public bool Equals(SceneNode x, SceneNode y)
+            {
+                return x.TreeSize == y.TreeSize && x.Children.Length == y.Children.Length &&
+                       x.Children.Zip(y.Children, Equals).All(b => b);
+            }
+
+            public int GetHashCode(SceneNode node)
+            {
+                return node.Children.Select(GetHashCode).Prepend(node.TreeSize).Aggregate((x, y) => unchecked(x * 1234567 + y));
+            }
         }
 
         public class ArbitraryScene : Arbitrary<Scene>
@@ -430,6 +596,17 @@ namespace osu.Framework.Tests.Visual
                 ? Gen.Constant(FSharpList<SceneNode>.Empty)
                 : Gen.Choose(1, treeSize).SelectMany(childSize => gen(childSize).SelectMany(head =>
                     genChildren(treeSize - childSize).Select(tail => FSharpList<SceneNode>.Cons(head, tail))));
+
+            public override IEnumerable<Scene> Shrinker(Scene scene)
+            {
+                var leaves = scene.Nodes.Where(x => x.Children.Length == 0 && x != scene.Root);
+                return leaves.Select(leaf => remove(scene.Root, leaf)).Distinct(new SceneTreeComparator()).Select(root => new Scene(root));
+            }
+
+            private SceneNode remove(SceneNode node, SceneNode target)
+            {
+                return new SceneNode(node.Children.Where(x => x != target).Select(x => remove(x, target)).ToArray());
+            }
         }
 
         public class ArbitraryModification : Arbitrary<SceneModification>
@@ -543,6 +720,7 @@ namespace osu.Framework.Tests.Visual
             private static Gen<Entry> entry<T>(string propertyName, Gen<T> gen) => gen.Select(x => new Entry(propertyName, x));
 
             private static readonly Gen<Entry> dummy = Gen.Constant(new Entry("Dummy", 0));
+
             private static readonly Gen<Entry> for_container = Gen.OneOf(
                 entry(nameof(X), position),
                 entry(nameof(Y), position),
@@ -555,7 +733,7 @@ namespace osu.Framework.Tests.Visual
                 entry(nameof(RelativeSizeAxes), axes),
                 entry(nameof(AutoSizeAxes), axes),
                 entry(nameof(RelativePositionAxes), axes),
-                entry(nameof(BypassAutoSizeAxes), axes),
+                NoBypassAutosizeAxes ? dummy : entry(nameof(BypassAutoSizeAxes), axes),
                 entry(nameof(FillMode), fillmode),
                 entry(nameof(Scale), vec(size)),
                 NoRotation ? dummy : entry(nameof(Rotation), rotation),
@@ -600,17 +778,18 @@ namespace osu.Framework.Tests.Visual
                 switch (modification.PropertyName)
                 {
                     case nameof(RelativeSizeAxes):
-                        if (ForbidAutoSizeUndefinedCase && (container.Parent.AutoSizeAxes & (Axes)value) != 0) return false;
+                        if (ForbidAutoSizeUndefinedCase && (container.Parent?.AutoSizeAxes ?? 0 & (Axes)value) != 0) return false;
                         return (container.AutoSizeAxes & (Axes)value) == 0;
                     case nameof(RelativePositionAxes):
-                        if (ForbidAutoSizeUndefinedCase && (container.Parent.AutoSizeAxes & (Axes)value) != 0) return false;
+                        if (ForbidAutoSizeUndefinedCase && (container.Parent?.AutoSizeAxes ?? 0 & (Axes)value) != 0) return false;
                         return true;
                     case nameof(AutoSizeAxes):
                         if (ForbidAutoSizeUndefinedCase)
                         {
                             var relativeSizeAxes = container.Children.Select(x => x.RelativeSizeAxes | x.RelativePositionAxes).Prepend(~(Axes)0).Aggregate((x, y) => x & y);
-                            if(((Axes)value & relativeSizeAxes) != 0) return false;
+                            if (((Axes)value & relativeSizeAxes) != 0) return false;
                         }
+
                         return (container.RelativeSizeAxes & (Axes)value) == 0;
                     case nameof(Width):
                         return (container.AutoSizeAxes & Axes.X) == 0;
@@ -637,7 +816,7 @@ namespace osu.Framework.Tests.Visual
                 {
                     var size = c.DrawSize;
                     var position = c.DrawPosition;
-                    if (Precision.AlmostEquals(size.X, 0) || Precision.AlmostEquals(size.Y, 0)) return new float[] { 0, 0, 0, 0 };
+                    if (almostEquals(size.X, 0) || almostEquals(size.Y, 0)) return new float[] { 0, 0, 0, 0 };
                     return new[] { size.X, size.Y, position.X, position.Y };
                 }).ToArray();
             }
@@ -672,7 +851,12 @@ namespace osu.Framework.Tests.Visual
                 LastState1 = state1;
                 LastState2 = state2;
 
-                return state1.Length == state2.Length && Enumerable.Range(0, state1.Length).All(i => Precision.AlmostEquals(state1[i], state2[i]));
+                return state1.Length == state2.Length && Enumerable.Range(0, state1.Length).All(i => almostEquals(state1[i], state2[i]));
+            }
+
+            private static bool almostEquals(float x, float y)
+            {
+                return Math.Abs(x - y) / Math.Max(1f, Math.Max(Math.Abs(x), Math.Abs(y))) <= 1e-3;
             }
         }
     }
