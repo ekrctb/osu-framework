@@ -23,6 +23,12 @@ namespace osu.Framework.Tests.Visual
 {
     public class StressTest : GridTestCase
     {
+        // Keep (AutoSizeAxes & (Child.RelativeSizeAxes | Child.RelativePositionAxes)) to 0
+        public static bool ForbidAutoSizeUndefinedCase = true;
+        public static bool NoPadding = true;
+        public static bool NoRotation = true;
+        public static bool NoShear = true;
+
         private Action actionOnClick;
 
         protected override bool OnClick(InputState state)
@@ -35,6 +41,7 @@ namespace osu.Framework.Tests.Visual
         {
             public abstract IEnumerable<Drawable> Drawables { get; }
             public abstract void DoModification();
+            public virtual float Scale => 1;
         }
 
         public void AddCase<TCase>() where TCase : InvalidationFailureCase, new()
@@ -45,7 +52,10 @@ namespace osu.Framework.Tests.Visual
             for (int i = 0; i < 2; i++)
             {
                 var instance = i == 0 ? instance1 : instance2;
-                Cell(0, i).Child = new Container
+                var cell = Cell(0, i);
+                cell.Scale = new Vector2(instance.Scale);
+                cell.AlwaysPresent = true;
+                cell.Child = new Container
                 {
                     Child = instance.Drawables.First(),
                     Size = new Vector2(250),
@@ -171,6 +181,55 @@ namespace osu.Framework.Tests.Visual
             }
         }
 
+        public class Case5 : SizeTwoCase
+        {
+            public override float Scale => 0.02f;
+
+            public Case5()
+            {
+                Child.RelativeSizeAxes = Axes.X;
+                Root.AutoSizeAxes = Axes.Y;
+                Child.Rotation = 30;
+            }
+
+            public override void DoModification()
+            {
+                Root.Width = 200;
+            }
+        }
+
+        public class Case6 : SizeTwoCase
+        {
+            public override float Scale => 0.02f;
+
+            public Case6()
+            {
+                Child.RelativeSizeAxes = Axes.Y;
+                Child.Shear = new Vector2(-2, 0);
+                Root.AutoSizeAxes = Axes.X;
+            }
+
+            public override void DoModification()
+            {
+                Root.Height = 130;
+            }
+        }
+
+        public class Case7 : SizeTwoCase
+        {
+            public Case7()
+            {
+                Root.Width = 2; Child.Scale = new Vector2(0.6666667f, 1);
+                Child.Anchor = Anchor.TopRight;
+                Child.Margin = new MarginPadding {Top=-1,Left=0.5f,Bottom=0,Right=0};
+            }
+
+            public override void DoModification()
+            {
+                Root.AutoSizeAxes = Axes.X;
+            }
+        }
+
         public StressTest()
             : base(1, 2)
         {
@@ -179,48 +238,54 @@ namespace osu.Framework.Tests.Visual
             AddStep("Case2", AddCase<Case2>);
             AddStep("Case3", AddCase<Case3>);
             AddStep("Case4", AddCase<Case4>);
+            AddStep("Case5", AddCase<Case5>);
+            AddStep("Case6", AddCase<Case6>);
+            AddStep("Case7", AddCase<Case7>);
 
             var propSize2 = prop(2, 2);
 
-            AddStep("quickCheck(size = 2)", () => Check.Quick(propSize2));
+            AddRepeatStep("quickCheck", () => Check.QuickThrowOnFailure(prop(2, 5)), 100);
+            AddRepeatStep("quickCheck(size = 2)", () => Check.QuickThrowOnFailure(propSize2), 100);
         }
 
         private Property prop(int sizeLo, int sizeUp) =>
-            Prop.ForAll(new ArbitraryScene(sizeLo, sizeUp), scene => Prop.ForAll(new ArbitraryModificationList(new ArbitraryModification(scene)), modifications =>
+            Prop.ForAll(new ArbitraryScene(sizeLo, sizeUp), scene => Prop.ForAll(new ArbitraryModificationList(new ArbitraryModification(scene)), modifications => runTest(scene, modifications)));
+
+        private bool runTest(Scene scene, SceneModification[] modifications)
+        {
+            var cell = Cell(0, 0);
+            var instance = new SceneInstance(scene);
+            var container = new Container
             {
-                var cell = Cell(0, 0);
-                var instance = new SceneInstance(scene);
-                var container = new Container
-                {
-                    Child = instance.Root,
-                    Size = new Vector2(250),
-                    Anchor = Anchor.Centre,
-                    Origin = Anchor.TopLeft,
-                };
+                Child = instance.Root,
+                Size = new Vector2(250),
+                Anchor = Anchor.Centre,
+                Origin = Anchor.TopLeft,
+            };
 
-                try
-                {
-                    cell.Child = container;
-                    cell.UpdateSubTree();
+            try
+            {
+                cell.Child = container;
+                cell.UpdateSubTree();
 
-                    foreach (var entry in modifications)
+                foreach (var entry in modifications)
+                {
+                    if (!instance.Execute(entry)) continue;
+
+                    if (!instance.CheckStateValidity())
                     {
-                        if (!instance.Execute(entry)) continue;
-
-                        if (!instance.CheckStateValidity())
-                        {
-                            return false;
-                        }
+                        return false;
                     }
                 }
-                finally
-                {
-                    cell.Remove(container);
-                    container.Remove(container.Child);
-                }
+            }
+            finally
+            {
+                cell.Remove(container);
+                container.Remove(container.Child);
+            }
 
-                return true;
-            }));
+            return true;
+        }
 
         public class ArbitraryModificationList : Arbitrary<SceneModification[]>
         {
@@ -477,13 +542,14 @@ namespace osu.Framework.Tests.Visual
 
             private static Gen<Entry> entry<T>(string propertyName, Gen<T> gen) => gen.Select(x => new Entry(propertyName, x));
 
+            private static readonly Gen<Entry> dummy = Gen.Constant(new Entry("Dummy", 0));
             private static readonly Gen<Entry> for_container = Gen.OneOf(
                 entry(nameof(X), position),
                 entry(nameof(Y), position),
                 entry(nameof(Width), size),
                 entry(nameof(Height), size),
                 entry(nameof(Margin), marginpadding(position)),
-                entry(nameof(Padding), marginpadding(position)),
+                NoPadding ? dummy : entry(nameof(Padding), marginpadding(position)),
                 entry(nameof(Origin), anchor),
                 entry(nameof(Anchor), anchor),
                 entry(nameof(RelativeSizeAxes), axes),
@@ -492,8 +558,8 @@ namespace osu.Framework.Tests.Visual
                 entry(nameof(BypassAutoSizeAxes), axes),
                 entry(nameof(FillMode), fillmode),
                 entry(nameof(Scale), vec(size)),
-                entry(nameof(Rotation), rotation),
-                entry(nameof(Shear), vec(position))
+                NoRotation ? dummy : entry(nameof(Rotation), rotation),
+                NoShear ? dummy : entry(nameof(Shear), vec(position))
             );
         }
 
@@ -533,13 +599,22 @@ namespace osu.Framework.Tests.Visual
 
                 switch (modification.PropertyName)
                 {
-                    case nameof(Drawable.RelativeSizeAxes):
+                    case nameof(RelativeSizeAxes):
+                        if (ForbidAutoSizeUndefinedCase && (container.Parent.AutoSizeAxes & (Axes)value) != 0) return false;
                         return (container.AutoSizeAxes & (Axes)value) == 0;
-                    case nameof(CompositeDrawable.AutoSizeAxes):
+                    case nameof(RelativePositionAxes):
+                        if (ForbidAutoSizeUndefinedCase && (container.Parent.AutoSizeAxes & (Axes)value) != 0) return false;
+                        return true;
+                    case nameof(AutoSizeAxes):
+                        if (ForbidAutoSizeUndefinedCase)
+                        {
+                            var relativeSizeAxes = container.Children.Select(x => x.RelativeSizeAxes | x.RelativePositionAxes).Prepend(~(Axes)0).Aggregate((x, y) => x & y);
+                            if(((Axes)value & relativeSizeAxes) != 0) return false;
+                        }
                         return (container.RelativeSizeAxes & (Axes)value) == 0;
-                    case nameof(Drawable.Width):
+                    case nameof(Width):
                         return (container.AutoSizeAxes & Axes.X) == 0;
-                    case nameof(Drawable.Height):
+                    case nameof(Height):
                         return (container.AutoSizeAxes & Axes.Y) == 0;
                     default:
                         return true;
@@ -548,6 +623,7 @@ namespace osu.Framework.Tests.Visual
 
             public bool Execute(SceneModification modification)
             {
+                if (modification.PropertyName == "Dummy") return false;
                 if (!CanExecute(modification)) return false;
 
                 var container = GetNode(modification.NodeName);
@@ -561,15 +637,19 @@ namespace osu.Framework.Tests.Visual
                 {
                     var size = c.DrawSize;
                     var position = c.DrawPosition;
-                    if (size.X == 0 || size.Y == 0) return new float[] { 0, 0, 0, 0 };
+                    if (Precision.AlmostEquals(size.X, 0) || Precision.AlmostEquals(size.Y, 0)) return new float[] { 0, 0, 0, 0 };
                     return new[] { size.X, size.Y, position.X, position.Y };
                 }).ToArray();
             }
 
-            private void recalculateState()
+            private void invalidate()
             {
                 foreach (var node in Nodes)
                     node.Invalidate();
+            }
+
+            private void update()
+            {
                 Root.UpdateSubTree();
                 Root.ValidateSubTree();
             }
@@ -580,12 +660,12 @@ namespace osu.Framework.Tests.Visual
             {
                 if (!Root.IsLoaded) throw new InvalidOperationException("The scene isn't loaded");
 
-                Root.UpdateSubTree();
-                Root.ValidateSubTree();
+                update();
 
                 var state1 = getState();
 
-                recalculateState();
+                invalidate();
+                update();
 
                 var state2 = getState();
 
