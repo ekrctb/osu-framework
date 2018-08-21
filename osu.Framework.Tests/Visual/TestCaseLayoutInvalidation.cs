@@ -8,7 +8,6 @@ using FsCheck;
 using JetBrains.Annotations;
 using Microsoft.FSharp.Collections;
 using Microsoft.FSharp.Core;
-using osu.Framework.Extensions.Color4Extensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Primitives;
@@ -27,193 +26,15 @@ namespace osu.Framework.Tests.Visual
         public static bool ForbidAutoSizeUndefinedCase = true; // keep (AutoSizeAxes & (Child1.BypassAutoSizeAxes & ... & Childn.BypassAutoSizeAxes)) to 0
         public static bool NoBypassAutosizeAxes = false;
         public static bool NoPadding = false;
+
         public static bool NoFillMode = false;
+
         // RequiredParentSizeToFit computation with rotation and shear is rather tricky. Leave it for now.
         public static bool NoRotation = true;
         public static bool NoShear = true;
 
-        public class Case
-        {
-            public readonly Scene Scene;
-            public readonly SceneModification[] Modifications;
-            public readonly SceneInstance Instance;
-
-            public IEnumerable<Drawable> Drawables => Instance.Nodes;
-            public float Scale { get; }
-
-            public Case(Scene scene, SceneModification[] modifications, float scale = 1)
-            {
-                Scale = scale;
-                Scene = scene;
-                Modifications = modifications;
-                Instance = new SceneInstance(scene);
-
-                foreach (var entry in modifications.Take(modifications.Length - 1))
-                    Instance.Execute(entry);
-            }
-
-            public void DoModification()
-            {
-                Instance.Execute(Modifications.Last());
-            }
-        }
-
         private Action currentCaseAction;
-
-        public void SetCase(Func<Case> factory)
-        {
-            var instance1 = factory();
-            var instance2 = factory();
-
-            for (var i = 0; i < 2; i++)
-            {
-                var instance = i == 0 ? instance1 : instance2;
-                Cell(0, i).Child = new Container
-                {
-                    Size = new Vector2(250),
-                    Anchor = Anchor.Centre,
-                    Origin = Anchor.TopLeft,
-                    Name = i == 0 ? "WithoutInvalidation" : "WithInvalidation",
-                    Child = new Container
-                    {
-                        Scale = new Vector2(instance.Scale),
-                        AlwaysPresent = true,
-                        Child = instance.Drawables.First()
-                    }
-                };
-
-                var index = 0;
-                foreach (var c in instance.Drawables.Cast<Container>())
-                {
-                    c.Add(new Box
-                    {
-                        RelativeSizeAxes = Axes.Both,
-                        Size = new Vector2(1),
-                        Colour = (index == 0 ? Color4.Red : index == 1 ? Color4.Blue : index == 2 ? Color4.Green : Color4.Yellow).Opacity(.5f),
-                        Depth = -1,
-                    });
-                    index += 1;
-                }
-            }
-
-            currentCaseAction = () =>
-            {
-                instance1.DoModification();
-                instance2.DoModification();
-
-                foreach (var d in instance2.Drawables)
-                    d.Invalidate();
-            };
-        }
-
-        private void addCaseStep(string name, Scene scene, SceneModification[] modifications, float scale)
-        {
-            AddStep($"{name} init", () =>
-            {
-                var result = runTest(scene, modifications);
-                SetCase(() => new Case(scene, modifications, scale));
-
-                if (!result)
-                    throw new Exception("runTest returned false");
-            });
-
-            AddStep($"{name} update", () => { currentCaseAction?.Invoke(); });
-
-            AddAssert($"{name} check", () =>
-            {
-                var container1 = Cell(0, 0).Child;
-                var container2 = Cell(0, 1).Child;
-                var state1 = GetDrawState(container1);
-                var state2 = GetDrawState(container2);
-                return almostEquals(state1, state2);
-            });
-        }
-
-        private void addCaseSteps()
-        {
-            addCaseStep("AutoSize1",
-                new Scene(new SceneNode(new[] { new SceneNode(new SceneNode[] { }), new SceneNode(new SceneNode[] { }) })),
-                new[]
-                {
-                    new SceneModification("Root", nameof(AutoSizeAxes), Axes.Y),
-                    new SceneModification("Child2", nameof(Origin), Anchor.BottomCentre),
-                    new SceneModification("Child1", nameof(RelativePositionAxes), Axes.Y)
-                },
-                100);
-
-            addCaseStep("AutoSize2",
-                new Scene(new SceneNode(new[] { new SceneNode(new SceneNode[] { }), new SceneNode(new SceneNode[] { }) })),
-                new[]
-                {
-                    new SceneModification("Root", nameof(AutoSizeAxes), Axes.Y),
-                    new SceneModification("Child1", nameof(RelativeSizeAxes), Axes.Y),
-                    new SceneModification("Child1", nameof(Height), 2),
-                    new SceneModification("Child1", nameof(Height), 2)
-                },
-                50);
-
-            addCaseStep("AutoSize3",
-                new Scene(new SceneNode(new[] { new SceneNode(new SceneNode[] { }), new SceneNode(new SceneNode[] { }) })),
-                new[]
-                {
-                    new SceneModification("Root", nameof(AutoSizeAxes), Axes.X),
-                    new SceneModification("Child1", nameof(Anchor), Anchor.TopRight),
-                    new SceneModification("Child2", nameof(Anchor), Anchor.TopRight),
-                    new SceneModification("Child2", nameof(X), 1),
-                    new SceneModification("Child2", nameof(RelativePositionAxes), Axes.X)
-                },
-                100);
-
-
-            addCaseStep("AutoSize4",
-                new Scene(new SceneNode(new[] { new SceneNode(new SceneNode[] { }), new SceneNode(new SceneNode[] { }) })),
-                new[]
-                {
-                    new SceneModification("Root", nameof(AutoSizeAxes), Axes.X),
-                    new SceneModification("Child1", nameof(Anchor), Anchor.TopRight),
-                    new SceneModification("Child2", nameof(Anchor), Anchor.TopRight),
-                    new SceneModification("Child1", nameof(RelativeSizeAxes), Axes.X)
-                },
-                100);
-
-            addCaseStep("Padding",
-                new Scene(new SceneNode(new[] { new SceneNode(new SceneNode[] { }) })),
-                new[]
-                {
-                    new SceneModification("Root", nameof(AutoSizeAxes), Axes.Y),
-                    new SceneModification("Root", nameof(Padding), new MarginPadding { Top = 1 })
-                },
-                100);
-
-            if (!NoRotation)
-            {
-                addCaseStep("Rotation",
-                    new Scene(new SceneNode(new[] { new SceneNode(new SceneNode[] { }) })),
-                    new[]
-                    {
-                        new SceneModification("Root", nameof(AutoSizeAxes), Axes.X),
-                        new SceneModification("Child", nameof(Rotation), -30),
-                        new SceneModification("Child", nameof(RelativeSizeAxes), Axes.Y),
-                        new SceneModification("Root", nameof(Height), 2)
-                    },
-                    100);
-            }
-
-            if (!NoShear)
-            {
-                addCaseStep("Shear",
-                    new Scene(new SceneNode(new[] { new SceneNode(new SceneNode[] { }) })),
-                    new[]
-                    {
-                        new SceneModification("Root", nameof(AutoSizeAxes), Axes.Y),
-                        new SceneModification("Child", nameof(RelativeSizeAxes), Axes.X),
-                        new SceneModification("Child", nameof(Anchor), Anchor.BottomRight),
-                        new SceneModification("Child", nameof(Shear), new Vector2(0, 1)),
-                        new SceneModification("Root", nameof(Width), 2)
-                    },
-                    50);
-            }
-        }
+        private readonly Container<DrawQuadOverlayBox> overlayBoxContainer;
 
         public TestCaseLayoutInvalidation()
             : base(1, 2)
@@ -231,13 +52,206 @@ namespace osu.Framework.Tests.Visual
                 var size = i;
                 AddStep($"quickCheck({i})", () => Check.One(config, prop(size)));
             }
+
+            Add(overlayBoxContainer = new Container<DrawQuadOverlayBox>());
+        }
+
+        protected override void Update()
+        {
+            base.Update();
+            foreach (var overlayBox in overlayBoxContainer)
+                overlayBox.Invalidate(Invalidation.DrawNode);
+        }
+
+        public class DrawQuadOverlayBox : Box
+        {
+            public Drawable Target;
+
+            public DrawQuadOverlayBox([NotNull] Drawable target)
+            {
+                Target = target;
+            }
+
+            public override Quad ScreenSpaceDrawQuad => Target.ScreenSpaceDrawQuad;
+        }
+
+        public class Case
+        {
+            public readonly string Name;
+            public readonly Scene Scene;
+            public readonly SceneModification[] Modifications;
+            public readonly float Scale;
+
+            public Case(string name, Scene scene, SceneModification[] modifications, float scale)
+            {
+                Name = name;
+                Scene = scene;
+                Modifications = modifications;
+                Scale = scale;
+            }
+
+            public SceneInstance CreateSceneInstance()
+            {
+                var instance = new SceneInstance(Scene);
+                instance.Container.Child.Scale = new Vector2(Scale);
+
+                foreach (var entry in Modifications.Take(Modifications.Length - 1))
+                    instance.Execute(entry);
+
+                return instance;
+            }
+
+            public void DoModification(SceneInstance instance)
+            {
+                instance.Execute(Modifications.Last());
+            }
+        }
+
+        private SceneInstance instance1, instance2;
+
+        public void SetCase(Case testCase)
+        {
+            instance1 = testCase.CreateSceneInstance();
+            instance2 = testCase.CreateSceneInstance();
+
+            overlayBoxContainer.Clear();
+
+            for (var i = 0; i < 2; i++)
+            {
+                var instance = i == 0 ? instance1 : instance2;
+                Cell(0, i).Child = instance.Container;
+                instance.Container.Name = i == 0 ? "WithoutInvalidation" : "WithInvalidation";
+
+                float hue = 0;
+                foreach (var node in instance.Nodes)
+                {
+                    overlayBoxContainer.Add(new DrawQuadOverlayBox(node) { Colour = Color4.FromHsv(new Vector4(hue, 1, 1, .5f)) });
+                    hue = (hue + .6666666f) % 1;
+                }
+            }
+
+            currentCaseAction = () =>
+            {
+                testCase.DoModification(instance1);
+                testCase.DoModification(instance2);
+
+                foreach (var d in instance2.Nodes)
+                    d.Invalidate();
+            };
+        }
+
+        private void addCaseStep(Case testCase)
+        {
+            AddStep($"{testCase.Name} init", () =>
+            {
+                var result = runTest(testCase.Scene, testCase.Modifications);
+                SetCase(testCase);
+
+                if (!result)
+                    throw new Exception("runTest returned false");
+            });
+
+            AddStep($"{testCase.Name} update", () => { currentCaseAction?.Invoke(); });
+
+            AddAssert($"{testCase.Name} check", () =>
+            {
+                var state1 = instance1.GetDrawState();
+                var state2 = instance2.GetDrawState();
+                return almostEquals(state1, state2);
+            });
+        }
+
+        private void addCaseSteps()
+        {
+            addCaseStep(new Case("AutoSize1",
+                new Scene(new SceneNode(new[] { new SceneNode(new SceneNode[] { }), new SceneNode(new SceneNode[] { }) })),
+                new[]
+                {
+                    new SceneModification("Root", nameof(AutoSizeAxes), Axes.Y),
+                    new SceneModification("Child2", nameof(Origin), Anchor.BottomCentre),
+                    new SceneModification("Child1", nameof(RelativePositionAxes), Axes.Y)
+                },
+                100));
+
+            addCaseStep(new Case("AutoSize2",
+                new Scene(new SceneNode(new[] { new SceneNode(new SceneNode[] { }), new SceneNode(new SceneNode[] { }) })),
+                new[]
+                {
+                    new SceneModification("Root", nameof(AutoSizeAxes), Axes.Y),
+                    new SceneModification("Child1", nameof(RelativeSizeAxes), Axes.Y),
+                    new SceneModification("Child1", nameof(Height), 2),
+                    new SceneModification("Child1", nameof(Height), 2)
+                },
+                50));
+
+            addCaseStep(new Case("AutoSize3",
+                new Scene(new SceneNode(new[] { new SceneNode(new SceneNode[] { }), new SceneNode(new SceneNode[] { }) })),
+                new[]
+                {
+                    new SceneModification("Root", nameof(AutoSizeAxes), Axes.X),
+                    new SceneModification("Child1", nameof(Anchor), Anchor.TopRight),
+                    new SceneModification("Child2", nameof(Anchor), Anchor.TopRight),
+                    new SceneModification("Child2", nameof(X), 1),
+                    new SceneModification("Child2", nameof(RelativePositionAxes), Axes.X)
+                },
+                100));
+
+
+            addCaseStep(new Case("AutoSize4",
+                new Scene(new SceneNode(new[] { new SceneNode(new SceneNode[] { }), new SceneNode(new SceneNode[] { }) })),
+                new[]
+                {
+                    new SceneModification("Root", nameof(AutoSizeAxes), Axes.X),
+                    new SceneModification("Child1", nameof(Anchor), Anchor.TopRight),
+                    new SceneModification("Child2", nameof(Anchor), Anchor.TopRight),
+                    new SceneModification("Child1", nameof(RelativeSizeAxes), Axes.X)
+                },
+                100));
+
+            addCaseStep(new Case("Padding",
+                new Scene(new SceneNode(new[] { new SceneNode(new SceneNode[] { }) })),
+                new[]
+                {
+                    new SceneModification("Root", nameof(AutoSizeAxes), Axes.Y),
+                    new SceneModification("Root", nameof(Padding), new MarginPadding { Top = 1 })
+                },
+                100));
+
+            if (!NoRotation)
+            {
+                addCaseStep(new Case("Rotation",
+                    new Scene(new SceneNode(new[] { new SceneNode(new SceneNode[] { }) })),
+                    new[]
+                    {
+                        new SceneModification("Root", nameof(AutoSizeAxes), Axes.X),
+                        new SceneModification("Child", nameof(Rotation), -30),
+                        new SceneModification("Child", nameof(RelativeSizeAxes), Axes.Y),
+                        new SceneModification("Root", nameof(Height), 2)
+                    },
+                    100));
+            }
+
+            if (!NoShear)
+            {
+                addCaseStep(new Case("Shear",
+                    new Scene(new SceneNode(new[] { new SceneNode(new SceneNode[] { }) })),
+                    new[]
+                    {
+                        new SceneModification("Root", nameof(AutoSizeAxes), Axes.Y),
+                        new SceneModification("Child", nameof(RelativeSizeAxes), Axes.X),
+                        new SceneModification("Child", nameof(Anchor), Anchor.BottomRight),
+                        new SceneModification("Child", nameof(Shear), new Vector2(0, 1)),
+                        new SceneModification("Root", nameof(Width), 2)
+                    },
+                    50));
+            }
         }
 
         private void onCounterCaseFound(Scene scene, SceneModification[] modifications)
         {
             Console.WriteLine();
             Console.WriteLine();
-            Console.WriteLine($"{nameof(addCaseStep)}(\"Case\",\n\t{scene.GetCode()},\n\tnew[] {{{string.Join(", ", modifications.Select(x => x.GetCode()))}}},\n\t100);");
+            Console.WriteLine($"{nameof(addCaseStep)}(new {nameof(Case)}(\"Case\",\n\t{scene.GetCode()},\n\tnew[] {{{string.Join(", ", modifications.Select(x => x.GetCode()))}}},\n\t100));");
             Console.WriteLine();
         }
 
@@ -288,17 +302,10 @@ namespace osu.Framework.Tests.Visual
         {
             var cell = Cell(0, 0);
             var instance = new SceneInstance(scene);
-            var container = new Container
-            {
-                Child = instance.Root,
-                Size = new Vector2(250),
-                Anchor = Anchor.Centre,
-                Origin = Anchor.TopLeft,
-            };
 
             try
             {
-                cell.Child = container;
+                cell.Add(instance.Container);
                 cell.UpdateSubTree();
 
                 foreach (var entry in modifications)
@@ -311,8 +318,7 @@ namespace osu.Framework.Tests.Visual
             }
             finally
             {
-                cell.Remove(container);
-                container.Remove(container.Child);
+                cell.Remove(instance.Container);
             }
 
             return true;
@@ -713,6 +719,7 @@ namespace osu.Framework.Tests.Visual
             public TestContainer Root => Nodes.First();
 
             private readonly Dictionary<string, TestContainer> nodeMap;
+            public readonly Container Container;
 
             public TestContainer GetNode(string name)
             {
@@ -736,7 +743,17 @@ namespace osu.Framework.Tests.Visual
                     return container;
                 }
 
-                createInstanceTree(scene.Root);
+                Container = new Container
+                {
+                    Size = new Vector2(250),
+                    Anchor = Anchor.Centre,
+                    Origin = Anchor.TopLeft,
+                    Child = new Container
+                    {
+                        Size = new Vector2(250),
+                        Child = createInstanceTree(scene.Root)
+                    }
+                };
             }
 
             private bool checkAutoSizeUndefinedCase(Container container, SceneModification modification)
@@ -799,14 +816,10 @@ namespace osu.Framework.Tests.Visual
                     node.Invalidate();
             }
 
-            private void update()
+            public void Update()
             {
-                Root.UpdateSubTree();
-                Root.UpdateSubTree();
-                Root.UpdateSubTree();
-                Root.UpdateSubTree();
-                Root.UpdateSubTree();
-                //Root.ValidateSubTree();
+                Container.UpdateSubTree();
+                Container.UpdateSubTree();
             }
 
             public float[] LastState1, LastState2;
@@ -815,30 +828,30 @@ namespace osu.Framework.Tests.Visual
             {
                 if (!Root.IsLoaded) throw new InvalidOperationException("The scene isn't loaded");
 
-                update();
+                Update();
 
-                var state1 = GetDrawState(Root);
+                var state1 = GetDrawState();
 
                 invalidate();
-                update();
+                Update();
 
-                var state2 = GetDrawState(Root);
+                var state2 = GetDrawState();
 
                 LastState1 = state1;
                 LastState2 = state2;
 
                 return almostEquals(state1, state2);
             }
-        }
 
-        public static float[] GetDrawState(Drawable root)
-        {
-            return root.GetDecendants().SelectMany(c =>
+            public float[] GetDrawState()
             {
-                var size = c.DrawSize;
-                var position = c.DrawPosition;
-                return new[] { size.X, size.Y, position.X, position.Y };
-            }).ToArray();
+                return Nodes.SelectMany(c =>
+                {
+                    var size = c.DrawSize;
+                    var position = c.DrawPosition;
+                    return new[] { size.X, size.Y, position.X, position.Y };
+                }).ToArray();
+            }
         }
 
         private static bool almostEquals(float[] x, float[] y)

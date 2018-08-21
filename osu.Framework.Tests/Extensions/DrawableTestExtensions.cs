@@ -2,28 +2,13 @@
 // Licensed under the MIT Licence - https://raw.githubusercontent.com/ppy/osu-framework/master/LICENCE
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using osu.Framework.Graphics;
-using osu.Framework.Graphics.Containers;
 
 namespace osu.Framework.Tests.Extensions
 {
     internal static class DrawableTestExtensions
     {
-        public static IEnumerable<Drawable> GetDecendants(this Drawable root)
-        {
-            if (root is CompositeDrawable composite)
-            {
-                return composite.InternalChildren.SelectMany(child => child.GetDecendants()).Prepend(root);
-            }
-            else
-            {
-                return new[] { root };
-            }
-        }
-
         public static T Get<T>(this Drawable d, string fieldOrPropertyName, Type searchType = null)
         {
             Type type = searchType ?? d.GetType();
