@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using FsCheck;
 using JetBrains.Annotations;
@@ -42,15 +43,17 @@ namespace osu.Framework.Tests.Visual
             addCaseSteps();
 
             var qc = Config.Quick;
-            var config = new Config(300, 0, qc.Replay, qc.Name, 1, 300, qc.QuietOnSuccess, qc.Every, qc.EveryShrink, qc.Arbitrary, new MyRunner
             {
-                OnCounterCaseFound = onCounterCaseFound
-            });
+                var config = new Config(300, 0, qc.Replay, qc.Name, 1, 300, qc.QuietOnSuccess, qc.Every, qc.EveryShrink, qc.Arbitrary, new MyRunner
+                {
+                    OnCounterCaseFound = onCounterCaseFound
+                });
 
-            foreach (var i in new[] { 2, 3, 5 })
-            {
-                var size = i;
-                AddStep($"quickCheck({i})", () => Check.One(config, prop(size)));
+                foreach (var i in new[] { 2, 3, 5 })
+                {
+                    var size = i;
+                    AddStep($"quickCheck({i})", () => Check.One(config, prop(size)));
+                }
             }
 
             Add(overlayBoxContainer = new Container<DrawQuadOverlayBox>());
@@ -126,7 +129,7 @@ namespace osu.Framework.Tests.Visual
                 foreach (var node in instance.Nodes)
                 {
                     overlayBoxContainer.Add(new DrawQuadOverlayBox(node) { Colour = Color4.FromHsv(new Vector4(hue, 1, 1, .5f)) });
-                    hue = (hue + .6666666f) % 1;
+                    hue = (hue + 1.6180339887498948482f) % 1;
                 }
             }
 
@@ -164,7 +167,7 @@ namespace osu.Framework.Tests.Visual
         private void addCaseSteps()
         {
             addCaseStep(new Case("AutoSize1",
-                new Scene(new SceneNode(new[] { new SceneNode(new SceneNode[] { }), new SceneNode(new SceneNode[] { }) })),
+                new Scene(new ContainerNode(new[] { new ContainerNode(), new ContainerNode() })),
                 new[]
                 {
                     new SceneModification("Root", nameof(AutoSizeAxes), Axes.Y),
@@ -174,7 +177,7 @@ namespace osu.Framework.Tests.Visual
                 100));
 
             addCaseStep(new Case("AutoSize2",
-                new Scene(new SceneNode(new[] { new SceneNode(new SceneNode[] { }), new SceneNode(new SceneNode[] { }) })),
+                new Scene(new ContainerNode(new[] { new ContainerNode(), new ContainerNode() })),
                 new[]
                 {
                     new SceneModification("Root", nameof(AutoSizeAxes), Axes.Y),
@@ -185,7 +188,7 @@ namespace osu.Framework.Tests.Visual
                 50));
 
             addCaseStep(new Case("AutoSize3",
-                new Scene(new SceneNode(new[] { new SceneNode(new SceneNode[] { }), new SceneNode(new SceneNode[] { }) })),
+                new Scene(new ContainerNode(new[] { new ContainerNode(), new ContainerNode() })),
                 new[]
                 {
                     new SceneModification("Root", nameof(AutoSizeAxes), Axes.X),
@@ -198,7 +201,7 @@ namespace osu.Framework.Tests.Visual
 
 
             addCaseStep(new Case("AutoSize4",
-                new Scene(new SceneNode(new[] { new SceneNode(new SceneNode[] { }), new SceneNode(new SceneNode[] { }) })),
+                new Scene(new ContainerNode(new[] { new ContainerNode(), new ContainerNode() })),
                 new[]
                 {
                     new SceneModification("Root", nameof(AutoSizeAxes), Axes.X),
@@ -209,7 +212,7 @@ namespace osu.Framework.Tests.Visual
                 100));
 
             addCaseStep(new Case("Padding",
-                new Scene(new SceneNode(new[] { new SceneNode(new SceneNode[] { }) })),
+                new Scene(new ContainerNode(new[] { new ContainerNode() })),
                 new[]
                 {
                     new SceneModification("Root", nameof(AutoSizeAxes), Axes.Y),
@@ -220,7 +223,7 @@ namespace osu.Framework.Tests.Visual
             if (!NoRotation)
             {
                 addCaseStep(new Case("Rotation",
-                    new Scene(new SceneNode(new[] { new SceneNode(new SceneNode[] { }) })),
+                    new Scene(new ContainerNode(new[] { new ContainerNode() })),
                     new[]
                     {
                         new SceneModification("Root", nameof(AutoSizeAxes), Axes.X),
@@ -234,7 +237,7 @@ namespace osu.Framework.Tests.Visual
             if (!NoShear)
             {
                 addCaseStep(new Case("Shear",
-                    new Scene(new SceneNode(new[] { new SceneNode(new SceneNode[] { }) })),
+                    new Scene(new ContainerNode(new[] { new ContainerNode() })),
                     new[]
                     {
                         new SceneModification("Root", nameof(AutoSizeAxes), Axes.Y),
@@ -245,6 +248,26 @@ namespace osu.Framework.Tests.Visual
                     },
                     50));
             }
+
+            addCaseStep(new Case("FillFlow1",
+                new Scene(new FillFlowContainerNode(new[] { new ContainerNode(), new ContainerNode() })),
+                new[]
+                {
+                    new SceneModification("Root", nameof(AutoSizeAxes), Axes.X)
+                },
+                100));
+
+            addCaseStep(new Case("FillFlow2",
+                new Scene(new ContainerNode(new SceneNode[] { new FillFlowContainerNode(new[] { new ContainerNode(), new ContainerNode() }), new ContainerNode() })),
+                new[]
+                {
+                    new SceneModification("Root", nameof(AutoSizeAxes), Axes.Y),
+                    new SceneModification("Root", nameof(Margin), new MarginPadding { Right = 1 }),
+                    new SceneModification("Child1", nameof(RelativeSizeAxes), Axes.Both),
+                    new SceneModification("Child1", nameof(FillMode), FillMode.Fill),
+                    new SceneModification("Child2", nameof(Margin), new MarginPadding { Top = 1 })
+                },
+                100));
         }
 
         private void onCounterCaseFound(Scene scene, SceneModification[] modifications)
@@ -395,18 +418,32 @@ namespace osu.Framework.Tests.Visual
             public TestContainer()
             {
                 Size = new Vector2(1);
-                AlwaysPresent = true;
             }
 
-            protected override bool ComputeIsMaskedAway(RectangleF maskingBounds)
+            public override string ToString() => $"{Name} ({DrawPosition.X:#,0},{DrawPosition.Y:#,0}) {DrawSize.X:#,0}x{DrawSize.Y:#,0}";
+            protected override bool ComputeIsMaskedAway(RectangleF maskingBounds) => false;
+        }
+
+        public class TestGridContainer : GridContainer
+        {
+            public TestGridContainer()
             {
-                return false;
+                Size = new Vector2(1);
             }
 
-            public override string ToString()
+            public override string ToString() => $"Grid {Name} ({DrawPosition.X:#,0},{DrawPosition.Y:#,0}) {DrawSize.X:#,0}x{DrawSize.Y:#,0}";
+            protected override bool ComputeIsMaskedAway(RectangleF maskingBounds) => false;
+        }
+
+        public class TestFillFlowContainer : FillFlowContainer
+        {
+            public TestFillFlowContainer()
             {
-                return $"{Name} ({DrawPosition.X:#,0},{DrawPosition.Y:#,0}) {DrawSize.X:#,0}x{DrawSize.Y:#,0}";
+                Size = new Vector2(1);
             }
+
+            public override string ToString() => $"FillFlow {Name} ({DrawPosition.X:#,0},{DrawPosition.Y:#,0}) {DrawSize.X:#,0}x{DrawSize.Y:#,0}";
+            protected override bool ComputeIsMaskedAway(RectangleF maskingBounds) => false;
         }
 
         public class SceneModification
@@ -440,6 +477,7 @@ namespace osu.Framework.Tests.Visual
                     case Anchor _:
                     case Axes _:
                     case FillMode _:
+                    case FillDirection _:
                         return $"{value.GetType().Name}.{value}";
                     default:
                         return value.ToString();
@@ -452,27 +490,90 @@ namespace osu.Framework.Tests.Visual
             }
         }
 
-        public class SceneNode
+        public abstract class SceneNode
         {
             public readonly SceneNode[] Children;
-            public readonly int TreeSize;
             public string Name = "Node";
 
-            public SceneNode(IEnumerable<SceneNode> children)
+            protected SceneNode(IEnumerable<SceneNode> children)
             {
-                Children = children.ToArray();
-                TreeSize = 1 + Children.Select(c => c.TreeSize).Sum();
+                Children = children?.ToArray() ?? Array.Empty<SceneNode>();
             }
 
-            public override string ToString()
+            public abstract string GetCode();
+            public override string ToString() => GetCode();
+
+            public abstract Drawable CreateInstanceTree(List<Drawable> resultDrawables);
+
+            protected string GetChildrenArrayCreationCode() =>
+                Children.Length == 0
+                    ? ""
+                    : $"new{(Children.Length != 0 && Children.All(x => x.GetType() == Children[0].GetType()) ? "" : " " + nameof(SceneNode))}[]{{{string.Join(",", Children.Select(x => x.GetCode()))}}}";
+        }
+
+        public class ContainerNode : SceneNode
+        {
+            public ContainerNode(IEnumerable<SceneNode> children = null)
+                : base(children)
             {
-                return $"{Name} {{{string.Join(", ", Children.Select(x => x.ToString()))}}}";
             }
 
-            public string GetCode()
+            public override Drawable CreateInstanceTree(List<Drawable> resultDrawables)
             {
-                return $"new {nameof(SceneNode)}(new{(Children.Length != 0 ? "" : " " + nameof(SceneNode))}[]{{{string.Join(", ", Children.Select(x => x.GetCode()))}}})";
+                var container = new TestContainer { Name = Name };
+                resultDrawables.Add(container);
+                foreach (var c in Children)
+                    container.Add(c.CreateInstanceTree(resultDrawables));
+                return container;
             }
+
+            public override string GetCode() => $"new {nameof(ContainerNode)}({GetChildrenArrayCreationCode()})";
+        }
+
+        public class GridContainerNode : SceneNode
+        {
+            public readonly int Rows, Columns;
+
+            public GridContainerNode(int rows, int columns, IEnumerable<SceneNode> children = null)
+                : base(children)
+            {
+                Trace.Assert(Children.Length <= rows * columns);
+                Rows = rows;
+                Columns = columns;
+            }
+
+            public override Drawable CreateInstanceTree(List<Drawable> resultDrawables)
+            {
+                var gridContainer = new TestGridContainer { Name = Name };
+                resultDrawables.Add(gridContainer);
+
+                var content = new Drawable[Rows][];
+                for (int i = 0; i < Rows; i++)
+                    content[i] = Children.Skip(i * Columns).Take(Columns).Select(c => c.CreateInstanceTree(resultDrawables)).ToArray();
+
+                return gridContainer;
+            }
+
+            public override string GetCode() => $"new {nameof(GridContainerNode)}({Columns},{Columns},{GetChildrenArrayCreationCode()})";
+        }
+
+        public class FillFlowContainerNode : SceneNode
+        {
+            public FillFlowContainerNode(IEnumerable<SceneNode> children = null)
+                : base(children)
+            {
+            }
+
+            public override Drawable CreateInstanceTree(List<Drawable> resultDrawables)
+            {
+                var container = new TestFillFlowContainer { Name = Name };
+                resultDrawables.Add(container);
+                foreach (var c in Children)
+                    container.Add(c.CreateInstanceTree(resultDrawables));
+                return container;
+            }
+
+            public override string GetCode() => $"new {nameof(FillFlowContainerNode)}({GetChildrenArrayCreationCode()})";
         }
 
         public class Scene
@@ -527,14 +628,36 @@ namespace osu.Framework.Tests.Visual
         {
             public bool Equals(SceneNode x, SceneNode y)
             {
-                return x.TreeSize == y.TreeSize && x.Children.Length == y.Children.Length &&
+                return x.Children.Length == y.Children.Length &&
                        x.Children.Zip(y.Children, Equals).All(b => b);
             }
 
             public int GetHashCode(SceneNode node)
             {
-                return node.Children.Select(GetHashCode).Prepend(node.TreeSize).Aggregate((x, y) => unchecked(x * 1234567 + y));
+                return node.Children.Select(GetHashCode).Prepend(node.Children.Length).Aggregate((x, y) => unchecked(x * 1234567 + y));
             }
+        }
+
+        public class ArbitraryDimensionList : Arbitrary<Dimension[]>
+        {
+            public readonly int Length;
+
+            public ArbitraryDimensionList(int length)
+            {
+                Length = length;
+            }
+
+            public override Gen<Dimension[]> Generator => Gen.Sequence(Enumerable.Repeat(dimension, Length).ToArray());
+
+            private static readonly Gen<Dimension> dimension = Gen.OneOf(new[]
+            {
+                new Dimension(GridSizeMode.Distributed),
+                new Dimension(GridSizeMode.Relative, .5f),
+                new Dimension(GridSizeMode.Absolute, .5f),
+                new Dimension(GridSizeMode.Absolute, 1f),
+                new Dimension(GridSizeMode.Absolute, 2f),
+                new Dimension(GridSizeMode.AutoSize),
+            }.Select(Gen.Constant));
         }
 
         public class ArbitraryScene : Arbitrary<Scene>
@@ -549,10 +672,10 @@ namespace osu.Framework.Tests.Visual
 
             public override Gen<Scene> Generator => Gen.Choose(SizeLo, SizeUp).SelectMany(gen).Select(root => new Scene(root));
 
-            private static Gen<SceneNode> gen(int treeSize)
-            {
-                return genChildren(treeSize - 1).Select(children => new SceneNode(children));
-            }
+            private static Gen<SceneNode> gen(int treeSize) => genChildren(treeSize - 1).SelectMany(children => Gen.OneOf(
+                Gen.Constant((SceneNode)new ContainerNode(children)),
+                Gen.Constant((SceneNode)new FillFlowContainerNode(children)),
+                Gen.Choose(1, Math.Max(1, children.Length)).Select(rows => (SceneNode)new GridContainerNode(rows, (children.Length - 1) / rows + 1, children))));
 
             private static Gen<FSharpList<SceneNode>> genChildren(int treeSize)
             {
@@ -570,7 +693,7 @@ namespace osu.Framework.Tests.Visual
 
             private SceneNode remove(SceneNode node, SceneNode target)
             {
-                return new SceneNode(node.Children.Where(x => x != target).Select(x => remove(x, target)).ToArray());
+                return new ContainerNode(node.Children.Where(x => x != target).Select(x => remove(x, target)).ToArray());
             }
         }
 
@@ -642,7 +765,11 @@ namespace osu.Framework.Tests.Visual
                 return Gen.Choose(0, scene.Nodes.Count - 1).SelectMany(nodeIndex =>
                 {
                     var node = scene.Nodes[nodeIndex];
-                    return for_container.Select(pair => new SceneModification(node.Name, pair.PropertyName, pair.Value));
+                    var genPair =
+                        node is FillFlowContainerNode ? for_fillflow_container :
+                        node is GridContainerNode grid ? for_grid_container(grid.Rows, grid.Columns) :
+                        for_container;
+                    return genPair.Select(pair => new SceneModification(node.Name, pair.PropertyName, pair.Value));
                 });
             }
 
@@ -668,6 +795,14 @@ namespace osu.Framework.Tests.Visual
 
             private static readonly Gen<Axes> axes = Gen.OneOf(new[] { Axes.None, Axes.X, Axes.Y, Axes.Both }.Select(Gen.Constant));
             private static readonly Gen<FillMode> fillmode = Gen.OneOf(new[] { FillMode.Fill, FillMode.Fit, FillMode.Stretch }.Select(Gen.Constant));
+            private static readonly Gen<FillDirection> filldirection = Gen.OneOf(new[] { FillDirection.Horizontal, FillDirection.Vertical, FillDirection.Full }.Select(Gen.Constant));
+
+            private static readonly Gen<Dimension> dimension = Gen.OneOf(
+                Gen.Constant(new Dimension(GridSizeMode.Distributed)),
+                Gen.Constant(new Dimension(GridSizeMode.AutoSize)),
+                size.Select(x => new Dimension(GridSizeMode.Absolute, x)),
+                size.Select(x => new Dimension(GridSizeMode.Relative, x))
+            );
 
             private static Gen<Vector2> vec(Gen<float> gen)
             {
@@ -710,38 +845,39 @@ namespace osu.Framework.Tests.Visual
                 NoRotation ? dummy : entry(nameof(Rotation), rotation),
                 NoShear ? dummy : entry(nameof(Shear), vec(position))
             );
+
+            private static readonly Gen<Entry> for_fillflow_container = Gen.OneOf(
+                for_container,
+                entry(nameof(TestFillFlowContainer.Direction), filldirection),
+                entry(nameof(TestFillFlowContainer.Spacing), vec(size)),
+                entry(nameof(TestFillFlowContainer.MaximumSize), vec(size))
+            );
+
+            private static Gen<Entry> for_grid_container(int rows, int columns) => Gen.OneOf(
+                for_container,
+                entry(nameof(TestGridContainer.RowDimensions), Gen.ListOf(rows, dimension).Select(x => x.ToArray())),
+                entry(nameof(TestGridContainer.ColumnDimensions), Gen.ListOf(columns, dimension).Select(x => x.ToArray()))
+            );
         }
 
         public class SceneInstance
         {
-            private readonly List<TestContainer> nodes;
-            public IReadOnlyList<TestContainer> Nodes => nodes;
-            public TestContainer Root => Nodes.First();
+            private readonly List<Drawable> nodes;
+            public IReadOnlyList<Drawable> Nodes => nodes;
+            public Drawable Root => Nodes.First();
 
-            private readonly Dictionary<string, TestContainer> nodeMap;
+            private readonly Dictionary<string, Drawable> nodeMap;
             public readonly Container Container;
 
-            public TestContainer GetNode(string name)
-            {
-                return nodeMap[name];
-            }
+            public Drawable GetNode(string name) => nodeMap[name];
 
             public SceneInstance(Scene scene)
             {
-                nodes = new List<TestContainer>();
-                nodeMap = new Dictionary<string, TestContainer>();
+                nodes = new List<Drawable>();
 
-                TestContainer createInstanceTree(SceneNode node)
-                {
-                    var container = new TestContainer { Name = node.Name };
+                var root = scene.Root.CreateInstanceTree(nodes);
 
-                    nodes.Add(container);
-                    nodeMap.Add(node.Name, container);
-
-                    foreach (var child in node.Children)
-                        container.Add(createInstanceTree(child));
-                    return container;
-                }
+                nodeMap = new Dictionary<string, Drawable>(Nodes.Select(node => new KeyValuePair<string, Drawable>(node.Name, node)));
 
                 Container = new Container
                 {
@@ -750,13 +886,13 @@ namespace osu.Framework.Tests.Visual
                     Origin = Anchor.TopLeft,
                     Child = new Container
                     {
-                        Size = new Vector2(250),
-                        Child = createInstanceTree(scene.Root)
+                        Scale = new Vector2(100),
+                        Child = root
                     }
                 };
             }
 
-            private bool checkAutoSizeUndefinedCase(Container container, SceneModification modification)
+            private bool checkAutoSizeUndefinedCase(CompositeDrawable container, SceneModification modification)
             {
                 if (!ForbidAutoSizeUndefinedCase) return true;
 
@@ -765,34 +901,58 @@ namespace osu.Framework.Tests.Visual
                     return c.Name == modification.NodeName && prop == modification.PropertyName ? (Axes)modification.Value : value;
                 }
 
-                var relativeAxes = container.Children.Select(x => overwrite(x, nameof(RelativeSizeAxes), x.RelativeSizeAxes) |
-                                                                  overwrite(x, nameof(RelativePositionAxes), x.RelativePositionAxes) |
-                                                                  overwrite(x, nameof(BypassAutoSizeAxes), x.Get<Axes>("bypassAutoSizeAxes"))).Prepend(~(Axes)0).Aggregate((x, y) => x & y);
+                var relativeAxes = container.InternalChildren.Select(x => overwrite(x, nameof(RelativeSizeAxes), x.RelativeSizeAxes) |
+                                                                          overwrite(x, nameof(RelativePositionAxes), x.RelativePositionAxes) |
+                                                                          overwrite(x, nameof(BypassAutoSizeAxes), x.Get<Axes>("bypassAutoSizeAxes"))).Prepend(~(Axes)0).Aggregate((x, y) => x & y);
 
                 return (overwrite(container, nameof(AutoSizeAxes), container.AutoSizeAxes) & relativeAxes) == 0;
             }
 
             public bool CanExecute(SceneModification modification)
             {
-                var container = GetNode(modification.NodeName);
+                var node = GetNode(modification.NodeName);
+                var autoSizeAxes = (node as CompositeDrawable)?.AutoSizeAxes ?? Axes.None;
 
                 switch (modification.PropertyName)
                 {
                     case nameof(RelativeSizeAxes):
-                        if ((container.AutoSizeAxes & (Axes)modification.Value) != 0) return false;
+                        if ((autoSizeAxes & (Axes)modification.Value) != 0)
+                            return false;
                         goto case nameof(RelativePositionAxes);
 
                     case nameof(RelativePositionAxes):
+                    {
+                        if (node.Parent is TestFillFlowContainer && (Axes)modification.Value != Axes.None) return false;
+                        goto case nameof(BypassAutoSizeAxes);
+                    }
                     case nameof(BypassAutoSizeAxes):
-                        return container.Parent == null || checkAutoSizeUndefinedCase((Container)container.Parent, modification);
+                        return node.Parent == null || checkAutoSizeUndefinedCase(node.Parent, modification);
 
                     case nameof(AutoSizeAxes):
-                        return (container.RelativeSizeAxes & (Axes)modification.Value) == 0 && checkAutoSizeUndefinedCase(container, modification);
+                    {
+                        if (!(node is CompositeDrawable composite)) return false;
+                        return (node.RelativeSizeAxes & (Axes)modification.Value) == 0 && checkAutoSizeUndefinedCase(composite, modification);
+                    }
+
+                    case nameof(Anchor):
+                    {
+                        if (node.Parent is TestFillFlowContainer && node.Parent.InternalChildren.Count > 1)
+                            return false;
+                        return true;
+                    }
 
                     case nameof(Width):
-                        return (container.AutoSizeAxes & Axes.X) == 0;
+                        return (autoSizeAxes & Axes.X) == 0;
                     case nameof(Height):
-                        return (container.AutoSizeAxes & Axes.Y) == 0;
+                        return (autoSizeAxes & Axes.Y) == 0;
+
+                    case nameof(TestFillFlowContainer.Direction):
+                        if ((Axes)modification.Value != Axes.None && ((CompositeDrawable)node).InternalChildren.All(c => c.RelativePositionAxes == Axes.None))
+                            return false;
+                        goto case nameof(TestFillFlowContainer.Spacing);
+                    case nameof(TestFillFlowContainer.Spacing):
+                    case nameof(TestFillFlowContainer.MaximumSize):
+                        return node is TestCaseFillFlowContainer;
 
                     default:
                         return true;
