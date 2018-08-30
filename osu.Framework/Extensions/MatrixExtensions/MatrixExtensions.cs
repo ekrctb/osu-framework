@@ -138,6 +138,91 @@ namespace osu.Framework.Extensions.MatrixExtensions
                 -d23 * det);
         }
 
+        public static Matrix3x2 InvertInParam(ref Matrix3x2 value)
+        {
+            float d11 = value.M22;
+            float d12 = value.M21;
+            float d13 = value.M21 * value.M32 + value.M22 * -value.M31;
+
+            float det = value.M11 * d11 - value.M12 * d12;
+
+            if (Math.Abs(det) == 0.0f)
+            {
+                return Matrix3x2.Zero;
+            }
+
+            det = 1f / det;
+
+            float d21 = value.M12;
+            float d22 = value.M11;
+            float d23 = value.M11 * value.M32 + value.M12 * -value.M31;
+
+            return new Matrix3x2(
+                +d11 * det,
+                -d21 * det,
+                -d12 * det,
+                +d22 * det,
+                +d13 * det,
+                -d23 * det);
+        }
+
+        public static void InvertSelfRef(ref Matrix3x2 value)
+        {
+            float d11 = value.M22;
+            float d12 = value.M21;
+            float d13 = value.M21 * value.M32 + value.M22 * -value.M31;
+
+            float det = value.M11 * d11 - value.M12 * d12;
+
+            if (Math.Abs(det) == 0.0f)
+            {
+                value = Matrix3x2.Zero;
+                return;
+            }
+
+            det = 1f / det;
+
+            float d21 = value.M12;
+            float d22 = value.M11;
+            float d23 = value.M11 * value.M32 + value.M12 * -value.M31;
+
+            value.M11 = +d11 * det;
+            value.M12 = -d21 * det;
+            value.M21 = -d12 * det;
+            value.M22 = +d22 * det;
+            value.M31 = +d13 * det;
+            value.M32 = -d23 * det;
+        }
+
+        public static void InvertRefOut(ref Matrix3x2 value, out Matrix3x2 result)
+        {
+            float d11 = value.M22;
+            float d12 = value.M21;
+            float d13 = value.M21 * value.M32 + value.M22 * -value.M31;
+
+            float det = value.M11 * d11 - value.M12 * d12;
+
+            if (Math.Abs(det) == 0.0f)
+            {
+                result = Matrix3x2.Zero;
+                return;
+            }
+
+            det = 1f / det;
+
+            float d21 = value.M12;
+            float d22 = value.M11;
+            float d23 = value.M11 * value.M32 + value.M12 * -value.M31;
+
+            result.Row0.X = +d11 * det;
+            result.Row0.Y = -d21 * det;
+            result.Row1.X = -d12 * det;
+            result.Row1.Y = +d22 * det;
+            result.Row2.X = +d13 * det;
+            result.Row2.Y = -d23 * det;
+        }
+
+
         public static Matrix3x2 Mult(Matrix3x2 a, Matrix3x2 b)
         {
             return new Matrix3x2(
