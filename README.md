@@ -8,9 +8,8 @@
 	  DefaultJob : .NET Core 2.1.2 (CoreCLR 4.6.26628.05, CoreFX 4.6.26629.01), 64bit RyuJIT
 
 
-	  Method |      Mean |     Error |    StdDev |
-	-------- |----------:|----------:|----------:|
-	    Copy | 12.799 ns | 0.0136 ns | 0.0127 ns |
-	 InParam | 10.811 ns | 0.1184 ns | 0.1049 ns |
-	 SelfRef |  5.611 ns | 0.0995 ns | 0.0931 ns |
-	  RefOut |  4.857 ns | 0.0043 ns | 0.0036 ns |
+	 Method |     Mean |     Error |    StdDev |
+	------- |---------:|----------:|----------:|
+	   Copy | 2.564 us | 0.0097 us | 0.0091 us |
+	    Ref | 1.626 us | 0.0111 us | 0.0104 us |
+	     In | 3.565 us | 0.0459 us | 0.0429 us |

@@ -8,14 +8,13 @@ namespace osu.Framework.Bench
 {
     public class CopyVsRef
     {
-        private Matrix3x2 mat;
-        private Matrix3x2 result;
+        private Matrix3x2 matSeed;
 
         [GlobalSetup]
         public void Setup()
         {
             var rng = new Random(42);
-            mat = new Matrix3x2(
+            matSeed = new Matrix3x2(
                 (float)rng.NextDouble(),
                 (float)rng.NextDouble(),
                 (float)rng.NextDouble(),
@@ -25,29 +24,44 @@ namespace osu.Framework.Bench
         }
 
         [Benchmark]
-        public void Copy()
+        public float Copy()
         {
-            result = MatrixExtensions.Invert(mat);
+            var mat = matSeed;
+            Matrix3x2 result = new Matrix3x2();
+            for (int i = 0; i < 100; i++)
+            {
+                MatrixExtensions.Invert(mat, out result);
+                MatrixExtensions.Invert(result, out mat);
+            }
+            return result.M11 + result.M12 + result.M21 + result.M22 + result.M31 + result.M32;
         }
 
         [Benchmark]
-        public void InParam()
+        public float Ref()
         {
-            result = MatrixExtensions.InvertInParam(ref mat);
+            var mat = matSeed;
+            Matrix3x2 result = new Matrix3x2();
+            for (int i = 0; i < 100; i++)
+            {
+                MatrixExtensions.InvertRef(ref mat, out result);
+                MatrixExtensions.InvertRef(ref result, out mat);
+            }
+            return result.M11 + result.M12 + result.M21 + result.M22 + result.M31 + result.M32;
         }
 
         [Benchmark]
-        public void SelfRef()
+        public float In()
         {
-            result = mat;
-            MatrixExtensions.InvertSelfRef(ref result);
+            var mat = matSeed;
+            Matrix3x2 result = new Matrix3x2();
+            for (int i = 0; i < 100; i++)
+            {
+                MatrixExtensions.InvertIn(in mat, out result);
+                MatrixExtensions.InvertIn(in result, out mat);
+            }
+            return result.M11 + result.M12 + result.M21 + result.M22 + result.M31 + result.M32;
         }
 
-        [Benchmark]
-        public void RefOut()
-        {
-            MatrixExtensions.InvertRefOut(ref mat, out result);
-        }
     }
 
     public class Program
