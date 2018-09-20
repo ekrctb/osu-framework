@@ -5,8 +5,9 @@ using System;
 using System.Diagnostics;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Input;
-using osu.Framework.Input.Bindings;
+using osu.Framework.Input.Bindings.Events;
 using osu.Framework.Input.EventArgs;
+using osu.Framework.Input.Events;
 using osu.Framework.Input.States;
 using osu.Framework.MathUtils;
 using osu.Framework.Threading;
@@ -28,7 +29,7 @@ namespace osu.Framework.Graphics.Containers
         }
     }
 
-    public class ScrollContainer<T> : Container<T>, DelayedLoadWrapper.IOnScreenOptimisingContainer, IKeyBindingHandler<PlatformAction>
+    public class ScrollContainer<T> : Container<T>, DelayedLoadWrapper.IOnScreenOptimisingContainer
         where T : Drawable
     {
         /// <summary>
@@ -620,25 +621,26 @@ namespace osu.Framework.Graphics.Containers
             }
         }
 
-        public bool OnPressed(PlatformAction action)
+        protected override bool Handle(UIEvent e)
         {
-            if (!IsHandlingKeyboardScrolling)
-                return false;
-
-            switch (action.ActionType)
+            if (e is ActionPressEvent<PlatformAction> actionPress && IsHandlingKeyboardScrolling)
             {
-                case PlatformActionType.LineStart:
-                    ScrollToStart();
-                    return true;
-                case PlatformActionType.LineEnd:
-                    ScrollToEnd();
-                    return true;
-                default:
-                    return false;
-            }
-        }
+                switch (actionPress.Action.ActionType)
+                {
+                    case PlatformActionType.LineStart:
+                        ScrollToStart();
+                        return true;
+                    case PlatformActionType.LineEnd:
+                        ScrollToEnd();
+                        return true;
+                    default:
+                        return false;
+                }
 
-        public bool OnReleased(PlatformAction action) => false;
+            }
+
+            return base.Handle(e);
+        }
 
         ScheduledDelegate DelayedLoadWrapper.IOnScreenOptimisingContainer.ScheduleCheckAction(Action action) => Scheduler.AddDelayed(action, 0, true);
     }

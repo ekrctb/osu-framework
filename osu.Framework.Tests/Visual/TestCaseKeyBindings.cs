@@ -15,7 +15,9 @@ using osu.Framework.Testing;
 using OpenTK;
 using OpenTK.Graphics;
 using osu.Framework.Graphics.Shapes;
+using osu.Framework.Input.Bindings.Events;
 using osu.Framework.Input.EventArgs;
+using osu.Framework.Input.Events;
 using osu.Framework.Input.States;
 using OpenTK.Input;
 
@@ -432,7 +434,7 @@ namespace osu.Framework.Tests.Visual
             public override bool ReceiveMouseInputAt(Vector2 screenSpacePos) => true;
         }
 
-        private class ScrollTestButton : TestButton, IScrollBindingHandler<TestAction>
+        private class ScrollTestButton : TestButton
         {
             public int OnScrollCount { get; protected set; }
             public float LastScrollAmount { get; protected set; }
@@ -449,15 +451,14 @@ namespace osu.Framework.Tests.Visual
                 Text += $", {OnScrollCount}, {LastScrollAmount}";
             }
 
-            public bool OnScroll(TestAction action, float amount, bool isPrecise)
+            protected override bool Handle(UIEvent e)
             {
-                if (Action == action)
+                if (e is ActionScrollEvent<TestAction> actionScroll && actionScroll.Action == Action)
                 {
                     ++OnScrollCount;
-                    LastScrollAmount = amount;
+                    LastScrollAmount = actionScroll.Amount;
                 }
-
-                return false;
+                return base.Handle(e);
             }
 
             public override void Reset()
@@ -468,7 +469,7 @@ namespace osu.Framework.Tests.Visual
             }
         }
 
-        private class TestButton : Button, IKeyBindingHandler<TestAction>
+        private class TestButton : Button
         {
             public new readonly TestAction Action;
             public readonly SimultaneousBindingMode Concurrency;
@@ -509,44 +510,35 @@ namespace osu.Framework.Tests.Visual
 
             private float alphaTarget = 0.5f;
 
-            public bool OnPressed(TestAction action)
+            protected override bool Handle(UIEvent e)
             {
-                if (Action == action)
+                switch (e)
                 {
-                    if (Concurrency != SimultaneousBindingMode.All)
-                        Trace.Assert(OnPressedCount == OnReleasedCount);
-                    ++OnPressedCount;
+                    case ActionPressEvent<TestAction> actionPress when actionPress.Action == Action:
+                        if (Concurrency != SimultaneousBindingMode.All)
+                            Trace.Assert(OnPressedCount == OnReleasedCount);
+                        ++OnPressedCount;
 
-                    alphaTarget += 0.2f;
-                    Background.Alpha = alphaTarget;
+                        alphaTarget += 0.2f;
+                        Background.Alpha = alphaTarget;
 
-                    highlight.ClearTransforms();
-                    highlight.Alpha = 1f;
-                    highlight.FadeOut(200);
+                        highlight.ClearTransforms();
+                        highlight.Alpha = 1f;
+                        highlight.FadeOut(200);
+                        return true;
 
-                    return true;
+                    case ActionReleaseEvent<TestAction> actionRelease when actionRelease.Action == Action:
+                        ++OnReleasedCount;
+                        if (Concurrency != SimultaneousBindingMode.All)
+                            Trace.Assert(OnPressedCount == OnReleasedCount);
+                        else
+                            Trace.Assert(OnReleasedCount <= OnPressedCount);
+
+                        alphaTarget -= 0.2f;
+                        Background.Alpha = alphaTarget;
+                        return true;
                 }
-
-                return false;
-            }
-
-            public bool OnReleased(TestAction action)
-            {
-                if (Action == action)
-                {
-                    ++OnReleasedCount;
-                    if (Concurrency != SimultaneousBindingMode.All)
-                        Trace.Assert(OnPressedCount == OnReleasedCount);
-                    else
-                        Trace.Assert(OnReleasedCount <= OnPressedCount);
-
-                    alphaTarget -= 0.2f;
-                    Background.Alpha = alphaTarget;
-
-                    return true;
-                }
-
-                return false;
+                return base.Handle(e);
             }
 
             public virtual void Reset()

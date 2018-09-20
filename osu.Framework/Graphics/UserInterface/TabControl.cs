@@ -10,7 +10,8 @@ using osu.Framework.Extensions;
 using osu.Framework.Extensions.IEnumerableExtensions;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Input;
-using osu.Framework.Input.Bindings;
+using osu.Framework.Input.Bindings.Events;
+using osu.Framework.Input.Events;
 using OpenTK;
 
 namespace osu.Framework.Graphics.UserInterface
@@ -22,7 +23,7 @@ namespace osu.Framework.Graphics.UserInterface
     /// start of the list.
     /// </summary>
     /// <typeparam name="T">The type of item to be represented by tabs.</typeparam>
-    public abstract class TabControl<T> : CompositeDrawable, IHasCurrentValue<T>, IKeyBindingHandler<PlatformAction>
+    public abstract class TabControl<T> : CompositeDrawable, IHasCurrentValue<T>
     {
         public Bindable<T> Current { get; } = new Bindable<T>();
 
@@ -300,11 +301,11 @@ namespace osu.Framework.Graphics.UserInterface
 
         private float getTabDepth(TabItem<T> tab) => tab.Pinned ? float.MinValue : --depthCounter;
 
-        public bool OnPressed(PlatformAction action)
+        protected override bool Handle(UIEvent e)
         {
-            if (IsSwitchable)
+            if (e is ActionPressEvent<PlatformAction> actionPress && IsSwitchable)
             {
-                switch (action.ActionType)
+                switch (actionPress.Action.ActionType)
                 {
                     case PlatformActionType.DocumentNext:
                         SwitchTab(1);
@@ -315,10 +316,9 @@ namespace osu.Framework.Graphics.UserInterface
                         return true;
                 }
             }
-            return false;
-        }
 
-        public bool OnReleased(PlatformAction action) => false;
+            return base.Handle(e);
+        }
 
         protected virtual TabFillFlowContainer CreateTabFlow() => new TabFillFlowContainer
         {

@@ -16,7 +16,9 @@ using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.Sprites;
 using osu.Framework.Graphics.UserInterface;
 using osu.Framework.Input.Bindings;
+using osu.Framework.Input.Bindings.Events;
 using osu.Framework.Input.EventArgs;
+using osu.Framework.Input.Events;
 using osu.Framework.Input.States;
 using osu.Framework.Logging;
 using osu.Framework.Platform;
@@ -29,7 +31,7 @@ using OpenTK.Input;
 namespace osu.Framework.Testing
 {
     [Cached]
-    public class TestBrowser : KeyBindingContainer<TestBrowserAction>, IKeyBindingHandler<TestBrowserAction>
+    public class TestBrowser : KeyBindingContainer<TestBrowserAction>
     {
         public TestCase CurrentTest { get; private set; }
 
@@ -320,26 +322,25 @@ namespace osu.Framework.Testing
             new KeyBinding(new[] { InputKey.Control, InputKey.H }, TestBrowserAction.ToggleTestList),
         };
 
-        public bool OnPressed(TestBrowserAction action)
+        protected override bool Handle(UIEvent e)
         {
-            switch (action)
-            {
-                case TestBrowserAction.Search:
-                    if (leftContainer.Width == 0) toggleTestList();
-                    GetContainingInputManager().ChangeFocus(searchTextBox);
-                    return true;
-                case TestBrowserAction.Reload:
-                    LoadTest(CurrentTest.GetType());
-                    return true;
-                case TestBrowserAction.ToggleTestList:
-                    toggleTestList();
-                    return true;
+            if (e is ActionPressEvent<TestBrowserAction> actionPress) {
+                switch (actionPress.Action)
+                {
+                    case TestBrowserAction.Search:
+                        if (leftContainer.Width == 0) toggleTestList();
+                        GetContainingInputManager().ChangeFocus(searchTextBox);
+                        return true;
+                    case TestBrowserAction.Reload:
+                        LoadTest(CurrentTest.GetType());
+                        return true;
+                    case TestBrowserAction.ToggleTestList:
+                        toggleTestList();
+                        return true;
+                }
             }
-
-            return false;
+            return base.Handle(e);
         }
-
-        public bool OnReleased(TestBrowserAction action) => false;
 
         public void LoadTest(int testIndex) => LoadTest(TestTypes[testIndex]);
 

@@ -13,7 +13,8 @@ using osu.Framework.Graphics.Shaders;
 using osu.Framework.Graphics.Textures;
 using osu.Framework.Graphics.Visualisation;
 using osu.Framework.Input;
-using osu.Framework.Input.Bindings;
+using osu.Framework.Input.Bindings.Events;
+using osu.Framework.Input.Events;
 using osu.Framework.IO.Stores;
 using osu.Framework.Localisation;
 using osu.Framework.Platform;
@@ -21,7 +22,7 @@ using GameWindow = osu.Framework.Platform.GameWindow;
 
 namespace osu.Framework
 {
-    public abstract class Game : Container, IKeyBindingHandler<FrameworkAction>
+    public abstract class Game : Container
     {
         public GameWindow Window => Host?.Window;
 
@@ -179,39 +180,39 @@ namespace osu.Framework
             set => performanceContainer.State = value;
         }
 
-        public bool OnPressed(FrameworkAction action)
+        protected override bool Handle(UIEvent e)
         {
-            switch (action)
+            if (e is ActionPressEvent<FrameworkAction> actionPress)
             {
-                case FrameworkAction.CycleFrameStatistics:
-                    switch (FrameStatisticsMode)
-                    {
-                        case FrameStatisticsMode.None:
-                            FrameStatisticsMode = FrameStatisticsMode.Minimal;
-                            break;
-                        case FrameStatisticsMode.Minimal:
-                            FrameStatisticsMode = FrameStatisticsMode.Full;
-                            break;
-                        case FrameStatisticsMode.Full:
-                            FrameStatisticsMode = FrameStatisticsMode.None;
-                            break;
-                    }
-                    return true;
-                case FrameworkAction.ToggleDrawVisualiser:
-                    DrawVisualiser.ToggleVisibility();
-                    return true;
-                case FrameworkAction.ToggleLogOverlay:
-                    logOverlay.ToggleVisibility();
-                    return true;
-                case FrameworkAction.ToggleFullscreen:
-                    Window?.CycleMode();
-                    return true;
+                switch (actionPress.Action)
+                {
+                    case FrameworkAction.CycleFrameStatistics:
+                        switch (FrameStatisticsMode)
+                        {
+                            case FrameStatisticsMode.None:
+                                FrameStatisticsMode = FrameStatisticsMode.Minimal;
+                                break;
+                            case FrameStatisticsMode.Minimal:
+                                FrameStatisticsMode = FrameStatisticsMode.Full;
+                                break;
+                            case FrameStatisticsMode.Full:
+                                FrameStatisticsMode = FrameStatisticsMode.None;
+                                break;
+                        }
+                        return true;
+                    case FrameworkAction.ToggleDrawVisualiser:
+                        DrawVisualiser.ToggleVisibility();
+                        return true;
+                    case FrameworkAction.ToggleLogOverlay:
+                        logOverlay.ToggleVisibility();
+                        return true;
+                    case FrameworkAction.ToggleFullscreen:
+                        Window?.CycleMode();
+                        return true;
+                }
             }
-
-            return false;
+            return base.Handle(e);
         }
-
-        public bool OnReleased(FrameworkAction action) => false;
 
         public void Exit()
         {

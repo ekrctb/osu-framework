@@ -19,8 +19,9 @@ using osu.Framework.Configuration;
 using osu.Framework.Extensions.Color4Extensions;
 using osu.Framework.Platform;
 using osu.Framework.Graphics.Shapes;
-using osu.Framework.Input.Bindings;
+using osu.Framework.Input.Bindings.Events;
 using osu.Framework.Input.EventArgs;
+using osu.Framework.Input.Events;
 using osu.Framework.Input.States;
 using osu.Framework.Timing;
 
@@ -951,7 +952,7 @@ namespace osu.Framework.Graphics.UserInterface
             }
         }
 
-        private class TextBoxPlatformBindingHandler : Container, IKeyBindingHandler<PlatformAction>
+        private class TextBoxPlatformBindingHandler : Container
         {
             private readonly TextBox textBox;
 
@@ -960,9 +961,13 @@ namespace osu.Framework.Graphics.UserInterface
                 this.textBox = textBox;
             }
 
-            public bool OnPressed(PlatformAction action) => textBox.HasFocus && textBox.handleAction(action);
+            protected override bool Handle(UIEvent e)
+            {
+                if (e is ActionPressEvent<PlatformAction> actionPress && textBox.HasFocus)
+                    textBox.handleAction(actionPress.Action);
 
-            public bool OnReleased(PlatformAction action) => false;
+                return base.Handle(e);
+            }
         }
     }
 }
