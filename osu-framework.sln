@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleGame.Desktop", "Sampl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "osu.Framework.NativeLibs", "osu.Framework.NativeLibs\osu.Framework.NativeLibs.csproj", "{F853B4BB-CB83-4169-8FD2-72EEB4A88C32}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "osuTK.NS20", "..\osuTK\src\osuTK\osuTK.NS20.csproj", "{2BBF0968-7995-4248-BC38-78DC2D3A2BF9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,5 +41,9 @@ Global
 		{F853B4BB-CB83-4169-8FD2-72EEB4A88C32}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F853B4BB-CB83-4169-8FD2-72EEB4A88C32}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F853B4BB-CB83-4169-8FD2-72EEB4A88C32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2BBF0968-7995-4248-BC38-78DC2D3A2BF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2BBF0968-7995-4248-BC38-78DC2D3A2BF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2BBF0968-7995-4248-BC38-78DC2D3A2BF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2BBF0968-7995-4248-BC38-78DC2D3A2BF9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
