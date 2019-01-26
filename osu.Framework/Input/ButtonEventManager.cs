@@ -1,6 +1,7 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using osu.Framework.Graphics;
@@ -18,7 +19,9 @@ namespace osu.Framework.Input
         /// </summary>
         public readonly TButton Button;
 
-        protected abstract IEnumerable<Drawable> InputQueue { get; }
+        private readonly Func<IEnumerable<Drawable>> getInputQueue;
+
+        protected IEnumerable<Drawable> InputQueue => getInputQueue?.Invoke() ?? Enumerable.Empty<Drawable>();
 
         /// <summary>
         /// The input queue for propagating button up event.
@@ -28,9 +31,10 @@ namespace osu.Framework.Input
 
         protected double ButtonStateChangeTime { get; private set; }
 
-        protected ButtonEventManager(TButton button)
+        protected ButtonEventManager(TButton button, Func<IEnumerable<Drawable>> inputQueueProvider)
         {
             Button = button;
+            getInputQueue = inputQueueProvider;
         }
 
         protected abstract UIEvent CreateButtonDownEvent(InputState state);

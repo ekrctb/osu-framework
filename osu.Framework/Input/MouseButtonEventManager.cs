@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using JetBrains.Annotations;
 using osu.Framework.Graphics;
 using osu.Framework.Input.Events;
 using osu.Framework.Input.StateChanges;
@@ -19,8 +20,6 @@ namespace osu.Framework.Input
     /// </summary>
     public abstract class MouseButtonEventManager : ButtonEventManager<MouseButton>
     {
-        protected override IEnumerable<Drawable> InputQueue => GetPositionalInputQueue?.Invoke() ?? Enumerable.Empty<Drawable>();
-
         protected override UIEvent CreateButtonDownEvent(InputState state) =>
             new MouseDownEvent(state, Button, MouseDownPosition);
 
@@ -30,12 +29,7 @@ namespace osu.Framework.Input
         /// <summary>
         /// Used for requesting focus from click.
         /// </summary>
-        public Action<Drawable> RequestFocus;
-
-        /// <summary>
-        /// Used for get a positional input queue.
-        /// </summary>
-        public Func<IEnumerable<Drawable>> GetPositionalInputQueue;
+        [CanBeNull] public Action<Drawable> RequestFocus;
 
         /// <summary>
         /// Whether dragging is handled by the managed button.
@@ -52,8 +46,8 @@ namespace osu.Framework.Input
         /// </summary>
         public abstract bool ChangeFocusOnClick { get; }
 
-        protected MouseButtonEventManager(MouseButton button)
-            : base(button)
+        protected MouseButtonEventManager(MouseButton button, Func<IEnumerable<Drawable>> inputQueueProvider)
+            : base(button, inputQueueProvider)
         {
         }
 

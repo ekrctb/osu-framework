@@ -25,16 +25,6 @@ namespace osu.Framework.Input
 {
     public abstract class InputManager : Container, IInputStateChangeHandler
     {
-        /// <summary>
-        /// The initial delay before key repeat begins.
-        /// </summary>
-        private const int repeat_initial_delay = 250;
-
-        /// <summary>
-        /// The delay between key repeats after the initial repeat.
-        /// </summary>
-        private const int repeat_tick_rate = 70;
-
         [Resolved(CanBeNull = true)]
         protected GameHost Host { get; private set; }
 
@@ -44,9 +34,6 @@ namespace osu.Framework.Input
         public Drawable FocusedDrawable { get; internal set; }
 
         protected abstract IEnumerable<InputHandler> InputHandlers { get; }
-
-        private double keyboardRepeatTime;
-        private Key? keyboardRepeatKey;
 
         /// <summary>
         /// The initial input state. <see cref="CurrentState"/> is always equal (as a reference) to the value returned from this.
@@ -117,18 +104,12 @@ namespace osu.Framework.Input
 
         private readonly Dictionary<Key, KeyboardKeyEventManager> keyEventManagers = new Dictionary<Key, KeyboardKeyEventManager>();
 
+        private readonly Dictionary<JoystickButton, JoystickButtonEventManager> joystickButtonEventManagers = new Dictionary<JoystickButton, JoystickButtonEventManager>();
+
         protected InputManager()
         {
             CurrentState = CreateInitialState();
             RelativeSizeAxes = Axes.Both;
-
-            foreach (var button in Enum.GetValues(typeof(MouseButton)).Cast<MouseButton>())
-            {
-                var manager = CreateButtonManagerFor(button);
-                manager.RequestFocus = ChangeFocusFromClick;
-                manager.GetPositionalInputQueue = () => PositionalInputQueue;
-                mouseButtonEventManagers.Add(button, manager);
-            }
         }
 
         /// <summary>
@@ -141,14 +122,20 @@ namespace osu.Framework.Input
             switch (button)
             {
                 case MouseButton.Left:
-                    return new MouseLeftButtonEventManager(button);
+                    return new MouseLeftButtonEventManager(button, () => PositionalInputQueue)
+                    {
+                        RequestFocus = ChangeFocusFromClick
+                    };
                 default:
-                    return new MouseMinorButtonEventManager(button);
+                    return new MouseMinorButtonEventManager(button, () => PositionalInputQueue);
             }
         }
 
         protected virtual KeyboardKeyEventManager CreateKeyManagerFor(Key key) =>
-            new KeyboardKeyEventManager(key);
+            new KeyboardKeyEventManager(key, () => NonPositionalInputQueue);
+
+        protected virtual JoystickButtonEventManager CreateJoystickButtonManagerFor(JoystickButton button) =>
+            new JoystickButtonEventManager(button, () => NonPositionalInputQueue);
 
         /// <summary>
         /// Reset current focused drawable to the top-most drawable which is <see cref="Drawable.RequestsFocus"/>.
@@ -261,14 +248,7 @@ namespace osu.Framework.Input
 
         private void updateKeyRepeat(InputState state)
         {
-            if (!(keyboardRepeatKey is Key key)) return;
-
-            keyboardRepeatTime -= Time.Elapsed;
-            while (keyboardRepeatTime < 0)
-            {
-                PropagateBlockableEvent(NonPositionalInputQueue, new KeyDownEvent(state, key, true));
-                keyboardRepeatTime += repeat_tick_rate;
-            }
+            // todo
         }
 
         protected virtual List<IInput> GetPendingInputs()
@@ -388,38 +368,6 @@ namespace osu.Framework.Input
                                      || k == Key.LWin || k == Key.RWin;
         }
 
-        protected virtual void HandleKeyboardKeyStateChange(ButtonStateChangeEvent<Key> keyboardKeyStateChange)
-        {
-            var state = keyboardKeyStateChange.State;
-            var key = keyboardKeyStateChange.Button;
-            var kind = keyboardKeyStateChange.Kind;
-
-            if (!keyEventManagers.TryGetValue(key, out var manager))
-            {
-                manager = CreateKeyManagerFor(key);
-                manager.GetNonPositionalInputQueue = () => NonPositionalInputQueue;
-                keyEventManagers.Add(key, manager);
-            }
-
-            manager.HandleButtonStateChange(state, kind, Time.Current);
-        }
-
-        protected virtual void HandleJoystickButtonStateChange(ButtonStateChangeEvent<JoystickButton> joystickButtonStateChange)
-        {
-            var state = joystickButtonStateChange.State;
-            var button = joystickButtonStateChange.Button;
-            var kind = joystickButtonStateChange.Kind;
-
-            if (kind == ButtonStateChangeKind.Pressed)
-            {
-                handleJoystickPress(state, button);
-            }
-            else
-            {
-                handleJoystickRelease(state, button);
-            }
-        }
-
         public virtual void HandleInputStateChange(InputStateChangeEvent inputStateChange)
         {
             switch (inputStateChange)
@@ -442,7 +390,40 @@ namespace osu.Framework.Input
             }
         }
 
-        protected virtual void HandleMousePositionChange(MousePositionChangeEvent e)
+        protected void HandleMouseButtonStateChange(ButtonStateChangeEvent<MouseButton> e)
+        {
+            if (!mouseButtonEventManagers.TryGetValue(e.Button, out var manager))
+            {
+                manager = CreateButtonManagerFor(e.Button);
+                mouseButtonEventManagers.Add(e.Button, manager);
+            }
+
+            manager.HandleButtonStateChange(e.State, e.Kind, Time.Current);
+        }
+
+        protected void HandleKeyboardKeyStateChange(ButtonStateChangeEvent<Key> e)
+        {
+            if (!keyEventManagers.TryGetValue(e.Button, out var manager))
+            {
+                manager = CreateKeyManagerFor(e.Button);
+                keyEventManagers.Add(e.Button, manager);
+            }
+
+            manager.HandleButtonStateChange(e.State, e.Kind, Time.Current);
+        }
+
+        protected void HandleJoystickButtonStateChange(ButtonStateChangeEvent<JoystickButton> e)
+        {
+            if (!joystickButtonEventManagers.TryGetValue(e.Button, out var manager))
+            {
+                manager = CreateJoystickButtonManagerFor(e.Button);
+                joystickButtonEventManagers.Add(e.Button, manager);
+            }
+
+            manager.HandleButtonStateChange(e.State, e.Kind, Time.Current);
+        }
+
+        protected void HandleMousePositionChange(MousePositionChangeEvent e)
         {
             var state = e.State;
             var mouse = state.Mouse;
@@ -451,43 +432,17 @@ namespace osu.Framework.Input
                 if (h.Enabled && h is INeedsMousePositionFeedback handler)
                     handler.FeedbackMousePositionChange(mouse.Position);
 
-            handleMouseMove(state, e.LastPosition);
+            PropagateBlockableEvent(PositionalInputQueue, new MouseMoveEvent(state, e.LastPosition));
 
-            foreach (var manager in mouseButtonEventManagers.Values)
+            foreach (var manager in mouseButtonEventManagers.Values) if (mouse.IsPressed(manager.Button))
                 manager.HandlePositionChange(state, e.LastPosition);
 
             updateHoverEvents(state);
         }
 
-        protected virtual void HandleMouseScrollChange(MouseScrollChangeEvent e)
+        protected void HandleMouseScrollChange(MouseScrollChangeEvent e)
         {
-            handleScroll(e.State, e.LastScroll, e.IsPrecise);
-        }
-
-        protected virtual void HandleMouseButtonStateChange(ButtonStateChangeEvent<MouseButton> e)
-        {
-            if (mouseButtonEventManagers.TryGetValue(e.Button, out var manager))
-                manager.HandleButtonStateChange(e.State, e.Kind, Time.Current);
-        }
-
-        private bool handleMouseMove(InputState state, Vector2 lastPosition)
-        {
-            return PropagateBlockableEvent(PositionalInputQueue, new MouseMoveEvent(state, lastPosition));
-        }
-
-        private bool handleScroll(InputState state, Vector2 lastScroll, bool isPrecise)
-        {
-            return PropagateBlockableEvent(PositionalInputQueue, new ScrollEvent(state, state.Mouse.Scroll - lastScroll, isPrecise));
-        }
-
-        private bool handleJoystickPress(InputState state, JoystickButton button)
-        {
-            return PropagateBlockableEvent(NonPositionalInputQueue, new JoystickPressEvent(state, button));
-        }
-
-        private bool handleJoystickRelease(InputState state, JoystickButton button)
-        {
-            return PropagateBlockableEvent(NonPositionalInputQueue, new JoystickReleaseEvent(state, button));
+            PropagateBlockableEvent(PositionalInputQueue, new ScrollEvent(e.State, e.State.Mouse.Scroll - e.LastScroll, e.IsPrecise));
         }
 
         /// <summary>
@@ -583,8 +538,8 @@ namespace osu.Framework.Input
 
         private class MouseLeftButtonEventManager : MouseButtonEventManager
         {
-            public MouseLeftButtonEventManager(MouseButton button)
-                : base(button)
+            public MouseLeftButtonEventManager(MouseButton button, Func<IEnumerable<Drawable>> inputQueueProvider)
+                : base(button, inputQueueProvider)
             {
             }
 
@@ -597,8 +552,8 @@ namespace osu.Framework.Input
 
         private class MouseMinorButtonEventManager : MouseButtonEventManager
         {
-            public MouseMinorButtonEventManager(MouseButton button)
-                : base(button)
+            public MouseMinorButtonEventManager(MouseButton button, Func<IEnumerable<Drawable>> inputQueueProvider)
+                : base(button, inputQueueProvider)
             {
             }
 
