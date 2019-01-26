@@ -115,6 +115,8 @@ namespace osu.Framework.Input
 
         private readonly Dictionary<MouseButton, MouseButtonEventManager> mouseButtonEventManagers = new Dictionary<MouseButton, MouseButtonEventManager>();
 
+        private readonly Dictionary<Key, KeyboardKeyEventManager> keyEventManagers = new Dictionary<Key, KeyboardKeyEventManager>();
+
         protected InputManager()
         {
             CurrentState = CreateInitialState();
@@ -144,6 +146,9 @@ namespace osu.Framework.Input
                     return new MouseMinorButtonEventManager(button);
             }
         }
+
+        protected virtual KeyboardKeyEventManager CreateKeyManagerFor(Key key) =>
+            new KeyboardKeyEventManager(key);
 
         /// <summary>
         /// Reset current focused drawable to the top-most drawable which is <see cref="Drawable.RequestsFocus"/>.
@@ -261,7 +266,7 @@ namespace osu.Framework.Input
             keyboardRepeatTime -= Time.Elapsed;
             while (keyboardRepeatTime < 0)
             {
-                handleKeyDown(state, key, true);
+                PropagateBlockableEvent(NonPositionalInputQueue, new KeyDownEvent(state, key, true));
                 keyboardRepeatTime += repeat_tick_rate;
             }
         }
@@ -389,23 +394,14 @@ namespace osu.Framework.Input
             var key = keyboardKeyStateChange.Button;
             var kind = keyboardKeyStateChange.Kind;
 
-            if (kind == ButtonStateChangeKind.Pressed)
+            if (!keyEventManagers.TryGetValue(key, out var manager))
             {
-                handleKeyDown(state, key, false);
-
-                if (!isModifierKey(key))
-                {
-                    keyboardRepeatKey = key;
-                    keyboardRepeatTime = repeat_initial_delay;
-                }
+                manager = CreateKeyManagerFor(key);
+                manager.GetNonPositionalInputQueue = () => NonPositionalInputQueue;
+                keyEventManagers.Add(key, manager);
             }
-            else
-            {
-                handleKeyUp(state, key);
 
-                keyboardRepeatKey = null;
-                keyboardRepeatTime = 0;
-            }
+            manager.HandleButtonStateChange(state, kind, Time.Current);
         }
 
         protected virtual void HandleJoystickButtonStateChange(ButtonStateChangeEvent<JoystickButton> joystickButtonStateChange)
@@ -482,16 +478,6 @@ namespace osu.Framework.Input
         private bool handleScroll(InputState state, Vector2 lastScroll, bool isPrecise)
         {
             return PropagateBlockableEvent(PositionalInputQueue, new ScrollEvent(state, state.Mouse.Scroll - lastScroll, isPrecise));
-        }
-
-        private bool handleKeyDown(InputState state, Key key, bool repeat)
-        {
-            return PropagateBlockableEvent(NonPositionalInputQueue, new KeyDownEvent(state, key, repeat));
-        }
-
-        private bool handleKeyUp(InputState state, Key key)
-        {
-            return PropagateBlockableEvent(NonPositionalInputQueue, new KeyUpEvent(state, key));
         }
 
         private bool handleJoystickPress(InputState state, JoystickButton button)
