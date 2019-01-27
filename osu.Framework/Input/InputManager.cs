@@ -25,6 +25,16 @@ namespace osu.Framework.Input
 {
     public abstract class InputManager : Container, IInputStateChangeHandler
     {
+        /// <summary>
+        /// The initial delay before key repeat begins.
+        /// </summary>
+        private const int repeat_initial_delay = 250;
+
+        /// <summary>
+        /// The delay between key repeats after the initial repeat.
+        /// </summary>
+        private const int repeat_tick_rate = 70;
+
         [Resolved(CanBeNull = true)]
         protected GameHost Host { get; private set; }
 
@@ -34,6 +44,9 @@ namespace osu.Framework.Input
         public Drawable FocusedDrawable { get; internal set; }
 
         protected abstract IEnumerable<InputHandler> InputHandlers { get; }
+
+        private double keyboardRepeatTime;
+        private Key? keyboardRepeatKey;
 
         /// <summary>
         /// The initial input state. <see cref="CurrentState"/> is always equal (as a reference) to the value returned from this.
@@ -248,7 +261,14 @@ namespace osu.Framework.Input
 
         private void updateKeyRepeat(InputState state)
         {
-            // todo
+            if (!(keyboardRepeatKey is Key key)) return;
+
+            keyboardRepeatTime -= Time.Elapsed;
+            while (keyboardRepeatTime < 0)
+            {
+                PropagateBlockableEvent(NonPositionalInputQueue, new KeyDownEvent(state, key, true));
+                keyboardRepeatTime += repeat_tick_rate;
+            }
         }
 
         protected virtual List<IInput> GetPendingInputs()
@@ -410,6 +430,15 @@ namespace osu.Framework.Input
             }
 
             manager.HandleButtonStateChange(e.State, e.Kind, Time.Current);
+
+            if (!isModifierKey(e.Button))
+            {
+                keyboardRepeatTime = repeat_initial_delay;
+                if (e.Kind == ButtonStateChangeKind.Pressed)
+                    keyboardRepeatKey = e.Button;
+                else if (keyboardRepeatKey == e.Button && e.Kind == ButtonStateChangeKind.Released)
+                    keyboardRepeatKey = null;
+            }
         }
 
         protected void HandleJoystickButtonStateChange(ButtonStateChangeEvent<JoystickButton> e)
