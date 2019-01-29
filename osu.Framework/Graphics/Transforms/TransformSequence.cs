@@ -113,7 +113,7 @@ namespace osu.Framework.Graphics.Transforms
 
         /// <summary>
         /// Appends a <see cref="Generator"/>s to this <see cref="TransformSequence{T}"/>.
-        /// The <see cref="Generator"/> is invoked within a <see cref="Transformable.BeginAbsoluteSequence(double, bool)"/>
+        /// The <see cref="Generator"/> is invoked within a <see cref="ITransformable.BeginAbsoluteSequence(double, bool)"/>
         /// such that the generated <see cref="TransformSequence{T}"/> starts at the correct point in time.
         /// Its <see cref="Transform"/>s are then merged into this <see cref="TransformSequence{T}"/>.
         /// </summary>
@@ -142,7 +142,7 @@ namespace osu.Framework.Graphics.Transforms
         }
 
         /// <summary>
-        /// Invokes <paramref name="originFunc"/> inside a <see cref="Transformable.BeginAbsoluteSequence(double, bool)"/>
+        /// Invokes <paramref name="originFunc"/> inside a <see cref="TransformState.BeginAbsoluteSequence(double, bool)"/>
         /// such that <see cref="ITransformable.TransformStartTime"/> is the current time of this <see cref="TransformSequence{T}"/>.
         /// It is the respondibility of <paramref name="originFunc"/> to make appropriate use of <see cref="ITransformable.TransformStartTime"/>.
         /// </summary>
@@ -159,7 +159,7 @@ namespace osu.Framework.Graphics.Transforms
         }
 
         /// <summary>
-        /// Invokes <paramref name="originAction"/> inside a <see cref="Transformable.BeginAbsoluteSequence(double, bool)"/>
+        /// Invokes <paramref name="originAction"/> inside a <see cref="TransformState.BeginAbsoluteSequence(double, bool)"/>
         /// such that <see cref="ITransformable.TransformStartTime"/> is the current time of this <see cref="TransformSequence{T}"/>.
         /// It is the respondibility of <paramref name="originAction"/> to make appropriate use of <see cref="ITransformable.TransformStartTime"/>.
         /// </summary>

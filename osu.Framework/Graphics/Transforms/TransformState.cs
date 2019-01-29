@@ -17,27 +17,21 @@ namespace osu.Framework.Graphics.Transforms
     /// An implementer of this class must call <see cref="UpdateTransforms"/> to
     /// update and apply its <see cref="Transform"/>s.
     /// </summary>
-    public abstract class Transformable : ITransformable
+    public class TransformState
     {
-        /// <summary>
-        /// The clock that is used to provide the timing for this object's <see cref="Transform"/>s.
-        /// </summary>
-        public abstract IFrameBasedClock Clock { get; set; }
+        public IFrameBasedClock Clock;
 
-        /// <summary>
-        /// The current frame's time as observed by this class's <see cref="Clock"/>.
-        /// </summary>
-        public FrameTimeInfo Time => Clock.TimeInfo;
+        private double currentTime => Clock?.CurrentTime ?? 0;
 
         /// <summary>
         /// The starting time to use for new <see cref="Transform"/>s.
         /// </summary>
-        public double TransformStartTime => (Clock?.CurrentTime ?? 0) + TransformDelay;
+        public double TransformStartTime => currentTime + TransformDelay;
 
         /// <summary>
         /// Delay from the current time until new <see cref="Transform"/>s are started, in milliseconds.
         /// </summary>
-        protected double TransformDelay { get; private set; }
+        public double TransformDelay { get; private set; }
 
         private readonly Lazy<SortedList<Transform>> transformsLazy = new Lazy<SortedList<Transform>>(() => new SortedList<Transform>(Transform.COMPARER));
 
@@ -47,7 +41,7 @@ namespace osu.Framework.Graphics.Transforms
         public IReadOnlyList<Transform> Transforms => transformsLazy.IsValueCreated ? (IReadOnlyList<Transform>)transformsLazy.Value : Array.Empty<Transform>();
 
         /// <summary>
-        /// The end time in milliseconds of the latest transform enqueued for this <see cref="Transformable"/>.
+        /// The end time in milliseconds of the latest transform enqueued for this <see cref="TransformState"/>.
         /// Will return the current time value if no transforms are present.
         /// </summary>
         public double LatestTransformEndTime
@@ -65,17 +59,12 @@ namespace osu.Framework.Graphics.Transforms
         }
 
         /// <summary>
-        /// Whether to remove completed transforms from the list of applicable transforms. Setting this to false allows for rewinding transforms.
-        /// </summary>
-        public virtual bool RemoveCompletedTransforms { get; internal set; } = true;
-
-        /// <summary>
         /// Resets <see cref="TransformDelay"/> and processes updates to this class based on loaded <see cref="Transform"/>s.
         /// </summary>
-        protected void UpdateTransforms()
+        public void UpdateTransforms(bool removeCompletedTransforms)
         {
             TransformDelay = 0;
-            updateTransforms(Time.Current);
+            updateTransforms(currentTime, removeCompletedTransforms);
         }
 
         private readonly Lazy<List<Action>> removalActions = new Lazy<List<Action>>(() => new List<Action>());
@@ -86,7 +75,7 @@ namespace osu.Framework.Graphics.Transforms
         /// Process updates to this class based on loaded <see cref="Transform"/>s. This does not reset <see cref="TransformDelay"/>.
         /// This is used for performing extra updates on <see cref="Transform"/>s when new <see cref="Transform"/>s are added.
         /// </summary>
-        private void updateTransforms(double time)
+        private void updateTransforms(double time, bool removeCompletedTransforms)
         {
             bool rewinding = lastUpdateTransformsTime > time;
             lastUpdateTransformsTime = time;
@@ -96,7 +85,7 @@ namespace osu.Framework.Graphics.Transforms
 
             var transforms = transformsLazy.Value;
 
-            if (rewinding && !RemoveCompletedTransforms)
+            if (rewinding && !removeCompletedTransforms)
             {
                 var appliedToEndReverts = new List<string>();
 
@@ -142,7 +131,7 @@ namespace osu.Framework.Graphics.Transforms
             {
                 var t = transforms[i];
 
-                var tCanRewind = !RemoveCompletedTransforms && t.Rewindable;
+                var tCanRewind = !removeCompletedTransforms && t.Rewindable;
 
                 if (time < t.StartTime)
                     break;
@@ -257,7 +246,7 @@ namespace osu.Framework.Graphics.Transforms
         /// An optional <see cref="Transform.TargetMember"/> name of <see cref="Transform"/>s to clear.
         /// Null for clearing all <see cref="Transform"/>s.
         /// </param>
-        public virtual void ClearTransforms(bool propagateChildren = false, string targetMember = null) => ClearTransformsAfter(double.NegativeInfinity, propagateChildren, targetMember);
+        public void ClearTransforms(bool propagateChildren = false, string targetMember = null) => ClearTransformsAfter(double.NegativeInfinity, propagateChildren, targetMember);
 
         /// <summary>
         /// Removes <see cref="Transform"/>s that start after <paramref name="time"/>.
@@ -268,7 +257,7 @@ namespace osu.Framework.Graphics.Transforms
         /// An optional <see cref="Transform.TargetMember"/> name of <see cref="Transform"/>s to clear.
         /// Null for clearing all <see cref="Transform"/>s.
         /// </param>
-        public virtual void ClearTransformsAfter(double time, bool propagateChildren = false, string targetMember = null)
+        public void ClearTransformsAfter(double time, bool propagateChildren = false, string targetMember = null)
         {
             if (!transformsLazy.IsValueCreated)
                 return;
@@ -289,18 +278,9 @@ namespace osu.Framework.Graphics.Transforms
                 t.OnAbort?.Invoke();
         }
 
-        /// <summary>
-        /// Applies <see cref="Transform"/>s at a point in time. This may only be called if <see cref="RemoveCompletedTransforms"/> is set to false.
-        /// <para>
-        /// This does not change the clock time.
-        /// </para>
-        /// </summary>
-        /// <param name="time">The time to apply <see cref="Transform"/>s at.</param>
-        /// <param name="propagateChildren">Whether to also apply children's <see cref="Transform"/>s at <paramref name="time"/>.</param>
-        public virtual void ApplyTransformsAt(double time, bool propagateChildren = false)
+        public void ApplyTransformsAt(double time, bool removeCompletedTransforms)
         {
-            if (RemoveCompletedTransforms) throw new InvalidOperationException($"Cannot arbitrarily apply transforms with {nameof(RemoveCompletedTransforms)} active.");
-            updateTransforms(time);
+            updateTransforms(time, removeCompletedTransforms);
         }
 
         /// <summary>
@@ -311,7 +291,7 @@ namespace osu.Framework.Graphics.Transforms
         /// An optional <see cref="Transform.TargetMember"/> name of <see cref="Transform"/>s to finish.
         /// Null for finishing all <see cref="Transform"/>s.
         /// </param>
-        public virtual void FinishTransforms(bool propagateChildren = false, string targetMember = null)
+        public void FinishTransforms(bool propagateChildren = false, string targetMember = null)
         {
             if (!transformsLazy.IsValueCreated)
                 return;
@@ -340,7 +320,7 @@ namespace osu.Framework.Graphics.Transforms
         /// <param name="duration">The delay duration to add.</param>
         /// <param name="propagateChildren">Whether we also delay down the child tree.</param>
         /// <returns>This</returns>
-        internal virtual void AddDelay(double duration, bool propagateChildren = false) => TransformDelay += duration;
+        internal void AddDelay(double duration, bool propagateChildren = false) => TransformDelay += duration;
 
         /// <summary>
         /// Start a sequence of <see cref="Transform"/>s with a (cumulative) relative delay applied.
@@ -374,7 +354,7 @@ namespace osu.Framework.Graphics.Transforms
         /// <param name="recursive">Whether this should be applied to all children.</param>
         /// <returns>A <see cref="InvokeOnDisposal"/> to be used in a using() statement.</returns>
         /// <exception cref="InvalidOperationException">Absolute sequences should never be nested inside another existing sequence.</exception>
-        public virtual InvokeOnDisposal BeginAbsoluteSequence(double newTransformStartTime, bool recursive = false)
+        public InvokeOnDisposal BeginAbsoluteSequence(double newTransformStartTime, bool recursive = false)
         {
             double oldTransformDelay = TransformDelay;
             double newTransformDelay = TransformDelay = newTransformStartTime - (Clock?.CurrentTime ?? 0);
@@ -407,28 +387,13 @@ namespace osu.Framework.Graphics.Transforms
         /// <param name="customTransformID">When not null, the <see cref="Transform.TransformID"/> to assign for ordering.</param>
         public void AddTransform(Transform transform, ulong? customTransformID = null)
         {
-            if (transform == null)
-                throw new ArgumentNullException(nameof(transform));
-
-            if (!ReferenceEquals(transform.TargetTransformable, this))
-                throw new InvalidOperationException(
-                    $"{nameof(transform)} must have been populated via {nameof(TransformableExtensions)}.{nameof(TransformableExtensions.PopulateTransform)} " +
-                    "using this object prior to being added.");
-
-            if (Clock == null)
-            {
-                transform.Apply(transform.EndTime);
-                transform.OnComplete?.Invoke();
-                return;
-            }
-
             var transforms = transformsLazy.Value;
 
             Debug.Assert(!(transform.TransformID == 0 && transforms.Contains(transform)), $"Zero-id {nameof(Transform)}s should never be contained already.");
 
             // This contains check may be optimized away in the future, should it become a bottleneck
             if (transform.TransformID != 0 && transforms.Contains(transform))
-                throw new InvalidOperationException($"{nameof(Transformable)} may not contain the same {nameof(Transform)} more than once.");
+                throw new InvalidOperationException($"{nameof(TransformState)} may not contain the same {nameof(Transform)} more than once.");
 
             transform.TransformID = customTransformID ?? ++currentTransformID;
             int insertionIndex = transforms.Add(transform);
@@ -446,11 +411,6 @@ namespace osu.Framework.Graphics.Transforms
             }
 
             invokePendingRemovalActions();
-
-            // If our newly added transform could have an immediate effect, then let's
-            // make this effect happen immediately.
-            if (transform.StartTime < Time.Current || transform.EndTime <= Time.Current)
-                updateTransforms(Time.Current);
         }
     }
 }

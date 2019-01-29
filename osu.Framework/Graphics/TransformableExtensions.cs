@@ -125,7 +125,7 @@ namespace osu.Framework.Graphics
         /// </summary>
         /// <returns>A <see cref="TransformSequence{T}"/> which has a delay waiting for all transforms to be completed.</returns>
         public static TransformSequence<T> DelayUntilTransformsFinished<T>(this T transformable)
-            where T : Transformable
+            where T : ITransformable
         {
             return transformable.Delay(Math.Max(0, transformable.LatestTransformEndTime - transformable.Time.Current));
         }

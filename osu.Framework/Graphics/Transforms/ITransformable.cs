@@ -22,5 +22,7 @@ namespace osu.Framework.Graphics.Transforms
         void AddTransform(Transform transform, ulong? customTransformID = null);
 
         void RemoveTransform(Transform toRemove);
+
+        double LatestTransformEndTime { get; }
     }
 }

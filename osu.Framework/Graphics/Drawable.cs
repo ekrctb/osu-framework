@@ -46,7 +46,7 @@ namespace osu.Framework.Graphics
     /// Drawables are always rectangular in shape in their local coordinate system,
     /// which makes them quad-shaped in arbitrary (linearly transformed) coordinate systems.
     /// </summary>
-    public abstract partial class Drawable : Transformable, IDisposable, IDrawable
+    public abstract partial class Drawable : IDisposable, IDrawable
     {
         #region Construction and disposal
 
@@ -1305,7 +1305,7 @@ namespace osu.Framework.Graphics
         /// If set, then the provided value is used as a custom clock and the
         /// <see cref="Parent"/>'s clock is ignored.
         /// </summary>
-        public override IFrameBasedClock Clock
+        public virtual IFrameBasedClock Clock
         {
             get => clock;
             set
@@ -1316,6 +1316,11 @@ namespace osu.Framework.Graphics
         }
 
         /// <summary>
+        /// The current frame's time as observed by this class's <see cref="Clock"/>.
+        /// </summary>
+        public FrameTimeInfo Time => Clock.TimeInfo;
+
+        /// <summary>
         /// Updates the clock to be used. Has no effect if this drawable
         /// uses a custom clock.
         /// </summary>
@@ -1323,6 +1328,7 @@ namespace osu.Framework.Graphics
         internal virtual void UpdateClock(IFrameBasedClock clock)
         {
             this.clock = customClock ?? clock;
+            transformState.Clock = this.clock;
             if (scheduler.IsValueCreated) scheduler.Value.UpdateClock(this.clock);
         }
 
@@ -2130,6 +2136,100 @@ namespace osu.Framework.Graphics
         #endregion
 
         #region Transforms
+
+        private readonly TransformState transformState = new TransformState();
+
+        public double TransformStartTime => transformState.TransformStartTime;
+
+        public double TransformDelay => transformState.TransformDelay;
+
+        public IReadOnlyList<Transform> Transforms => transformState.Transforms;
+
+        public double LatestTransformEndTime => transformState.LatestTransformEndTime;
+
+        /// <summary>
+        /// Whether to remove completed transforms from the list of applicable transforms. Setting this to false allows for rewinding transforms.
+        /// </summary>
+        public virtual bool RemoveCompletedTransforms { get; internal set; }
+
+        public virtual void RemoveTransform(Transform toRemove)
+        {
+            transformState.RemoveTransform(toRemove);
+        }
+
+        public virtual void ClearTransforms(bool propagateChildren = false, string targetMember = null)
+        {
+            transformState.ClearTransforms(propagateChildren, targetMember);
+        }
+
+        public virtual void ClearTransformsAfter(double time, bool propagateChildren = false, string targetMember = null)
+        {
+            transformState.ClearTransformsAfter(time, propagateChildren, targetMember);
+        }
+
+        /// <summary>
+        /// Applies <see cref="Transform"/>s at a point in time. This may only be called if <see cref="RemoveCompletedTransforms"/> is set to false.
+        /// <para>
+        /// This does not change the clock time.
+        /// </para>
+        /// </summary>
+        /// <param name="time">The time to apply <see cref="Transform"/>s at.</param>
+        /// <param name="propagateChildren">Whether to also apply children's <see cref="Transform"/>s at <paramref name="time"/>.</param>
+        public virtual void ApplyTransformsAt(double time, bool propagateChildren = false)
+        {
+            if (RemoveCompletedTransforms) throw new InvalidOperationException($"Cannot arbitrarily apply transforms with {nameof(RemoveCompletedTransforms)} active.");
+            transformState.ApplyTransformsAt(time, RemoveCompletedTransforms);
+        }
+
+        public virtual void FinishTransforms(bool propagateChildren = false, string targetMember = null)
+        {
+            transformState.FinishTransforms(propagateChildren, targetMember);
+        }
+
+        internal virtual void AddDelay(double duration, bool propagateChildren = false)
+        {
+            transformState.AddDelay(duration, propagateChildren);
+        }
+
+        public virtual InvokeOnDisposal BeginDelayedSequence(double delay, bool recursive = false)
+        {
+            return transformState.BeginDelayedSequence(delay, recursive);
+        }
+
+        public virtual InvokeOnDisposal BeginAbsoluteSequence(double newTransformStartTime, bool recursive = false)
+        {
+            return transformState.BeginAbsoluteSequence(newTransformStartTime, recursive);
+        }
+
+        public void AddTransform(Transform transform, ulong? customTransformID = null)
+        {
+            if (!ReferenceEquals(transform.TargetTransformable, this))
+                throw new InvalidOperationException(
+                    $"{nameof(transform)} must have been populated via {nameof(TransformableExtensions)}.{nameof(TransformableExtensions.PopulateTransform)} " +
+                    "using this object prior to being added.");
+
+            if (transform == null)
+                throw new ArgumentNullException(nameof(transform));
+
+            if (Clock == null)
+            {
+                transform.Apply(transform.EndTime);
+                transform.OnComplete?.Invoke();
+                return;
+            }
+
+            transformState.AddTransform(transform, customTransformID);
+
+            // If our newly added transform could have an immediate effect, then let's
+            // make this effect happen immediately.
+            if (transform.StartTime < Time.Current || transform.EndTime <= Time.Current)
+                UpdateTransforms();
+        }
+
+        protected void UpdateTransforms()
+        {
+            transformState.UpdateTransforms(RemoveCompletedTransforms);
+        }
 
         protected internal ScheduledDelegate Schedule(Action action) => Scheduler.AddDelayed(action, TransformDelay);
 
