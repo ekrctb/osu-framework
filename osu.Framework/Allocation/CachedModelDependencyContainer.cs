@@ -4,7 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Reflection;
-using osu.Framework.Configuration;
+using osu.Framework.Bindables;
 
 namespace osu.Framework.Allocation
 {
