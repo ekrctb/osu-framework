@@ -9,7 +9,7 @@ namespace osu.Framework.Bindables
     /// <summary>
     /// An interface which can be bound to other <see cref="IBindable"/>s in order to watch for (and react to) <see cref="IBindable.Disabled"/> changes.
     /// </summary>
-    public interface IBindable : IParseable, ICanBeDisabled, IHasDefaultValue, IUnbindable, IHasDescription
+    public interface IBindable : IParseable, ICanBeDisabled, IHasDefaultValue, IUnbindable
     {
         /// <summary>
         /// Binds ourselves to another bindable such that we receive any value limitations of the bindable we bind width.

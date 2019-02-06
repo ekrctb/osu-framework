@@ -915,20 +915,6 @@ namespace osu.Framework.Tests.Bindables
 
         #endregion
 
-        #region .Description
-
-        [Test]
-        public void TestDescriptionWhenSetReturnsSetValue()
-        {
-            const string description = "The list used for testing.";
-
-            bindableStringList.Description = description;
-
-            Assert.AreEqual(description, bindableStringList.Description);
-        }
-
-        #endregion
-
         #region .Parse(obj)
 
         [Test]

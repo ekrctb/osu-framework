@@ -417,12 +417,6 @@ namespace osu.Framework.Bindables
 
         #endregion IUnbindable
 
-        #region IHasDescription
-
-        public string Description { get; set; }
-
-        #endregion IHasDescription
-
         #region IBindableCollection
 
         /// <summary>

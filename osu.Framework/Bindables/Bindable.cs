@@ -286,8 +286,6 @@ namespace osu.Framework.Bindables
             tThem.removeWeakReference(weakReference);
         }
 
-        public string Description { get; set; }
-
         public override string ToString()
         {
             return value?.ToString() ?? string.Empty;
