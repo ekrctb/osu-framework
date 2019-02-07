@@ -237,10 +237,10 @@ namespace osu.Framework.Graphics
             t.Append(o => o.TransformSpacingTo(newSpacing, duration, easing));
 
         /// <summary>
-        /// Smoothly adjusts the value of a <see cref="Bindable{TValue}"/> over time.
+        /// Smoothly adjusts the value of a <see cref="LegacyBindable{T}"/> over time.
         /// </summary>
         /// <returns>A <see cref="TransformSequence{T}"/> to which further transforms can be added.</returns>
-        public static TransformSequence<T> TransformBindableTo<T, TValue>(this TransformSequence<T> t, [NotNull] Bindable<TValue> bindable, TValue newValue, double duration = 0, Easing easing = Easing.None,
+        public static TransformSequence<T> TransformBindableTo<T, TValue>(this TransformSequence<T> t, [NotNull] LegacyBindable<TValue> bindable, TValue newValue, double duration = 0, Easing easing = Easing.None,
                                                                           InterpolationFunc<TValue> interpolationFunc = null)
             where T : ITransformable =>
             t.Append(o => o.TransformBindableTo(bindable, newValue, duration, easing, interpolationFunc));

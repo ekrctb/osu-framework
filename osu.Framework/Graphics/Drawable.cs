@@ -164,7 +164,7 @@ namespace osu.Framework.Graphics
         private bool unbindComplete;
 
         /// <summary>
-        /// Unbinds all <see cref="Bindable{T}"/>s stored as fields or properties in this <see cref="Drawable"/>.
+        /// Unbinds all <see cref="LegacyBindable{T}"/>s stored as fields or properties in this <see cref="Drawable"/>.
         /// </summary>
         private void unbindAllBindables()
         {

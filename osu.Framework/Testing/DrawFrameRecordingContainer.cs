@@ -12,7 +12,7 @@ namespace osu.Framework.Testing
 {
     internal class DrawFrameRecordingContainer : Container
     {
-        private readonly Bindable<RecordState> recordState = new Bindable<RecordState>();
+        private readonly LegacyBindable<RecordState> recordState = new LegacyBindable<RecordState>();
         private readonly BindableInt currentFrame = new BindableInt();
 
         private readonly List<DrawNode> recordedFrames = new List<DrawNode>();

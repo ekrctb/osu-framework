@@ -17,7 +17,7 @@ namespace osu.Framework.Configuration.Tracking
         TrackedSettings CreateTrackedSettings();
 
         /// <summary>
-        /// Loads <see cref="Bindable{T}"/>s into <see cref="TrackedSettings"/>.
+        /// Loads <see cref="LegacyBindable{T}"/>s into <see cref="TrackedSettings"/>.
         /// </summary>
         /// <param name="settings">The settings to load into.</param>
         void LoadInto(TrackedSettings settings);

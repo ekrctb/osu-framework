@@ -13,9 +13,9 @@ namespace osu.Framework.Graphics.UserInterface
 {
     public class CircularProgress : Drawable, IHasCurrentValue<double>
     {
-        private readonly Bindable<double> current = new Bindable<double>();
+        private readonly LegacyBindable<double> current = new LegacyBindable<double>();
 
-        public Bindable<double> Current
+        public LegacyBindable<double> Current
         {
             get => current;
             set

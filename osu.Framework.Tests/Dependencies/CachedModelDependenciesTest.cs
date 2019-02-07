@@ -230,19 +230,19 @@ namespace osu.Framework.Tests.Dependencies
         private class FieldModel
         {
             [Cached]
-            public readonly Bindable<int> Bindable = new Bindable<int>(1);
+            public readonly LegacyBindable<int> Bindable = new LegacyBindable<int>(1);
         }
 
         private class PropertyModel
         {
             [Cached]
-            public Bindable<int> Bindable { get; private set; } = new Bindable<int>(1);
+            public LegacyBindable<int> Bindable { get; private set; } = new LegacyBindable<int>(1);
         }
 
         private class DerivedFieldModel : FieldModel
         {
             [Cached]
-            public readonly Bindable<string> BindableString = new Bindable<string>();
+            public readonly LegacyBindable<string> BindableString = new LegacyBindable<string>();
         }
 
         private class FieldModelResolver
@@ -266,10 +266,10 @@ namespace osu.Framework.Tests.Dependencies
         private class DerivedFieldModelPropertyResolver
         {
             [Resolved(typeof(DerivedFieldModel))]
-            public Bindable<int> Bindable { get; private set; }
+            public LegacyBindable<int> Bindable { get; private set; }
 
             [Resolved(typeof(DerivedFieldModel))]
-            public Bindable<string> BindableString { get; private set; }
+            public LegacyBindable<string> BindableString { get; private set; }
         }
     }
 }

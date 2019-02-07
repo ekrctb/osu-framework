@@ -11,10 +11,10 @@ namespace osu.Framework.Graphics.Transforms
     {
         public override string TargetMember { get; }
 
-        private readonly Bindable<TValue> targetBindable;
+        private readonly LegacyBindable<TValue> targetBindable;
         private readonly InterpolationFunc<TValue> interpolationFunc;
 
-        public TransformBindable(Bindable<TValue> targetBindable, InterpolationFunc<TValue> interpolationFunc)
+        public TransformBindable(LegacyBindable<TValue> targetBindable, InterpolationFunc<TValue> interpolationFunc)
         {
             this.targetBindable = targetBindable;
             this.interpolationFunc = interpolationFunc ?? Interpolation<TValue>.ValueAt;

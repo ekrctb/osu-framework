@@ -13,9 +13,9 @@ namespace osu.Framework.Tests.Bindables
         [Test]
         public void TestInt()
         {
-            var toSerialize = new Bindable<int> { Value = 1337 };
+            var toSerialize = new LegacyBindable<int> { Value = 1337 };
 
-            var deserialized = JsonConvert.DeserializeObject<Bindable<int>>(JsonConvert.SerializeObject(toSerialize));
+            var deserialized = JsonConvert.DeserializeObject<LegacyBindable<int>>(JsonConvert.SerializeObject(toSerialize));
 
             Assert.AreEqual(toSerialize.Value, deserialized.Value);
         }
@@ -25,7 +25,7 @@ namespace osu.Framework.Tests.Bindables
         {
             var toSerialize = new BindableInt { Value = 1337 };
 
-            var deserialized = JsonConvert.DeserializeObject<Bindable<int>>(JsonConvert.SerializeObject(toSerialize));
+            var deserialized = JsonConvert.DeserializeObject<LegacyBindable<int>>(JsonConvert.SerializeObject(toSerialize));
 
             Assert.AreEqual(toSerialize.Value, deserialized.Value);
         }
@@ -35,7 +35,7 @@ namespace osu.Framework.Tests.Bindables
         {
             var toSerialize = new BindableDouble { Value = 1337.0 };
 
-            var deserialized = JsonConvert.DeserializeObject<Bindable<double>>(JsonConvert.SerializeObject(toSerialize));
+            var deserialized = JsonConvert.DeserializeObject<LegacyBindable<double>>(JsonConvert.SerializeObject(toSerialize));
 
             Assert.AreEqual(toSerialize.Value, deserialized.Value);
         }
@@ -43,9 +43,9 @@ namespace osu.Framework.Tests.Bindables
         [Test]
         public void TestString()
         {
-            var toSerialize = new Bindable<string> { Value = "1337" };
+            var toSerialize = new LegacyBindable<string> { Value = "1337" };
 
-            var deserialized = JsonConvert.DeserializeObject<Bindable<string>>(JsonConvert.SerializeObject(toSerialize));
+            var deserialized = JsonConvert.DeserializeObject<LegacyBindable<string>>(JsonConvert.SerializeObject(toSerialize));
 
             Assert.AreEqual(toSerialize.Value, deserialized.Value);
         }
@@ -85,7 +85,7 @@ namespace osu.Framework.Tests.Bindables
         [Test]
         public void TestComplexGeneric()
         {
-            var toSerialize = new Bindable<CustomObj>
+            var toSerialize = new LegacyBindable<CustomObj>
             {
                 Value = new CustomObj
                 {
@@ -94,7 +94,7 @@ namespace osu.Framework.Tests.Bindables
                 }
             };
 
-            var deserialized = JsonConvert.DeserializeObject<Bindable<CustomObj>>(JsonConvert.SerializeObject(toSerialize));
+            var deserialized = JsonConvert.DeserializeObject<LegacyBindable<CustomObj>>(JsonConvert.SerializeObject(toSerialize));
 
             Assert.AreEqual(toSerialize.Value.Bindable1.Value, deserialized.Value.Bindable1.Value);
             Assert.AreEqual(toSerialize.Value.Bindable2.Value, deserialized.Value.Bindable2.Value);
@@ -125,8 +125,8 @@ namespace osu.Framework.Tests.Bindables
 
         private class CustomObj
         {
-            public Bindable<int> Bindable1 = new Bindable<int>();
-            public Bindable<int> Bindable2 = new Bindable<int>();
+            public LegacyBindable<int> Bindable1 = new LegacyBindable<int>();
+            public LegacyBindable<int> Bindable2 = new LegacyBindable<int>();
         }
 
         private class CustomObj2

@@ -444,7 +444,7 @@ namespace osu.Framework.Bindables
             ItemsAdded?.Invoke(items);
         }
 
-        void IBindable.BindTo(IBindable them)
+        void ILegacyBindable.BindTo(ILegacyBindable them)
         {
             if (!(them is BindableList<T> tThem))
                 throw new InvalidCastException($"Can't bind to a bindable of type {them.GetType()} from a bindable of type {GetType()}.");
@@ -491,7 +491,7 @@ namespace osu.Framework.Bindables
 
         private void removeWeakReference(WeakReference<BindableList<T>> weakReference) => bindings?.Remove(weakReference);
 
-        IBindable IBindable.GetBoundCopy() => GetBoundCopy();
+        ILegacyBindable ILegacyBindable.GetBoundCopy() => GetBoundCopy();
 
         IBindableList<T> IBindableList<T>.GetBoundCopy()
             => GetBoundCopy();

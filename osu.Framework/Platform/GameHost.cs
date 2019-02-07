@@ -616,14 +616,14 @@ namespace osu.Framework.Platform
 
         private InvokeOnDisposal inputPerformanceCollectionPeriod;
 
-        private Bindable<GCLatencyMode> activeGCMode;
+        private LegacyBindable<GCLatencyMode> activeGCMode;
 
-        private Bindable<FrameSync> frameSyncMode;
+        private LegacyBindable<FrameSync> frameSyncMode;
 
-        private Bindable<string> ignoredInputHandlers;
+        private LegacyBindable<string> ignoredInputHandlers;
 
-        private Bindable<double> cursorSensitivity;
-        private Bindable<bool> performanceLogging;
+        private LegacyBindable<double> cursorSensitivity;
+        private LegacyBindable<bool> performanceLogging;
 
         private void setupConfig()
         {

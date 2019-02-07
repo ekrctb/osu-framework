@@ -15,7 +15,7 @@ namespace osu.Framework.Tests.Bindables
         [TestCase(TestEnum.Value2 + 1)]
         public void TestSet(TestEnum value)
         {
-            var bindable = new Bindable<TestEnum> { Value = value };
+            var bindable = new LegacyBindable<TestEnum> { Value = value };
             Assert.AreEqual(value, bindable.Value);
         }
 
@@ -25,7 +25,7 @@ namespace osu.Framework.Tests.Bindables
         [TestCase("2", TestEnum.Value2 + 1)]
         public void TestParsingString(string value, TestEnum expected)
         {
-            var bindable = new Bindable<TestEnum>();
+            var bindable = new LegacyBindable<TestEnum>();
             bindable.Parse(value);
 
             Assert.AreEqual(expected, bindable.Value);
@@ -37,7 +37,7 @@ namespace osu.Framework.Tests.Bindables
         [TestCase(TestEnum.Value2 + 1)]
         public void TestParsingEnum(TestEnum value)
         {
-            var bindable = new Bindable<TestEnum>();
+            var bindable = new LegacyBindable<TestEnum>();
             bindable.Parse(value);
 
             Assert.AreEqual(value, bindable.Value);

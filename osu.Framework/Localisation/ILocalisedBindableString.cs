@@ -6,9 +6,9 @@ using osu.Framework.Bindables;
 namespace osu.Framework.Localisation
 {
     /// <summary>
-    /// An <see cref="IBindable{T}"/> which has its value set depending on the current locale of the <see cref="LocalisationManager"/>.
+    /// An <see cref="ILegacyBindable{T}"/> which has its value set depending on the current locale of the <see cref="LocalisationManager"/>.
     /// </summary>
-    public interface ILocalisedBindableString : IBindable<string>
+    public interface ILocalisedBindableString : ILegacyBindable<string>
     {
         /// <summary>
         /// Sets the original, un-localised text.

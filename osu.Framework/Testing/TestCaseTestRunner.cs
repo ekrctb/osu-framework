@@ -32,7 +32,7 @@ namespace osu.Framework.Testing
         {
             private const double time_between_tests = 200;
 
-            private Bindable<double> volume;
+            private LegacyBindable<double> volume;
             private double volumeAtStartup;
 
             [Resolved]

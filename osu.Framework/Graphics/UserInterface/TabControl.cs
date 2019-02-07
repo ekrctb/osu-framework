@@ -23,9 +23,9 @@ namespace osu.Framework.Graphics.UserInterface
     /// <typeparam name="T">The type of item to be represented by tabs.</typeparam>
     public abstract class TabControl<T> : CompositeDrawable, IHasCurrentValue<T>, IKeyBindingHandler<PlatformAction>
     {
-        private readonly Bindable<T> current = new Bindable<T>();
+        private readonly LegacyBindable<T> current = new LegacyBindable<T>();
 
-        public Bindable<T> Current
+        public LegacyBindable<T> Current
         {
             get => current;
             set

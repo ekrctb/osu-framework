@@ -7,9 +7,9 @@ using osu.Framework.Bindables;
 namespace osu.Framework.Localisation
 {
     /// <summary>
-    /// An <see cref="IBindable{T}"/> which has its value set based on the user's unicode preference.
+    /// An <see cref="ILegacyBindable{T}"/> which has its value set based on the user's unicode preference.
     /// </summary>
-    public interface IUnicodeBindableString : IBindable<string>
+    public interface IUnicodeBindableString : ILegacyBindable<string>
     {
         /// <summary>
         /// The text to use if unicode can be displayed. Can be null, in which case <see cref="NonUnicodeText"/> will be used.

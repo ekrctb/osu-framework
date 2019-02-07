@@ -14,7 +14,7 @@ namespace osu.Framework.Tests.Bindables
         [TestCase("this is a string")]
         public void TestSet(string value)
         {
-            var bindable = new Bindable<string> { Value = value };
+            var bindable = new LegacyBindable<string> { Value = value };
             Assert.AreEqual(value, bindable.Value);
         }
 
@@ -23,7 +23,7 @@ namespace osu.Framework.Tests.Bindables
         [TestCase("this is a string")]
         public void TestParsingString(string value)
         {
-            var bindable = new Bindable<string>();
+            var bindable = new LegacyBindable<string>();
             bindable.Parse(value);
 
             Assert.AreEqual(value, bindable.Value);

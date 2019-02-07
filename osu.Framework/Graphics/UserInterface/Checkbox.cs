@@ -10,9 +10,9 @@ namespace osu.Framework.Graphics.UserInterface
 {
     public abstract class Checkbox : Container, IHasCurrentValue<bool>
     {
-        private readonly Bindable<bool> current = new Bindable<bool>();
+        private readonly LegacyBindable<bool> current = new LegacyBindable<bool>();
 
-        public Bindable<bool> Current
+        public LegacyBindable<bool> Current
         {
             get => current;
             set

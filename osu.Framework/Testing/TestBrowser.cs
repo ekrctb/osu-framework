@@ -82,9 +82,9 @@ namespace osu.Framework.Testing
         }
 
         internal readonly BindableDouble PlaybackRate = new BindableDouble(1) { MinValue = 0, MaxValue = 2 };
-        internal readonly Bindable<Assembly> Assembly = new Bindable<Assembly>();
-        internal readonly Bindable<bool> RunAllSteps = new Bindable<bool>();
-        internal readonly Bindable<RecordState> RecordState = new Bindable<RecordState>();
+        internal readonly LegacyBindable<Assembly> Assembly = new LegacyBindable<Assembly>();
+        internal readonly LegacyBindable<bool> RunAllSteps = new LegacyBindable<bool>();
+        internal readonly LegacyBindable<RecordState> RecordState = new LegacyBindable<RecordState>();
         internal readonly BindableInt CurrentFrame = new BindableInt { MinValue = 0, MaxValue = 0 };
 
         private TestBrowserToolbar toolbar;
@@ -95,7 +95,7 @@ namespace osu.Framework.Testing
 
         private Action exit;
 
-        private Bindable<bool> showLogOverlay;
+        private LegacyBindable<bool> showLogOverlay;
 
         [BackgroundDependencyLoader]
         private void load(Storage storage, GameHost host, FrameworkConfigManager frameworkConfig)

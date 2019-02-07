@@ -5,7 +5,7 @@ using System;
 
 namespace osu.Framework.Bindables
 {
-    public class BindableBool : Bindable<bool>
+    public class BindableBool : LegacyBindable<bool>
     {
         public BindableBool(bool value = false)
             : base(value)

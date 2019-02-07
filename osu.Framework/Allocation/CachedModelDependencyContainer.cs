@@ -15,7 +15,7 @@ namespace osu.Framework.Allocation
     /// Users can query the model by directly querying for the <typeparamref name="TModel"/> type,
     /// and query for the model's dependencies by providing the <typeparamref name="TModel"/> type as a parent.
     /// </remarks>
-    /// <typeparam name="TModel">The type of the model to cache. Must contain only <see cref="Bindable{T}"/> fields or auto-properties.</typeparam>
+    /// <typeparam name="TModel">The type of the model to cache. Must contain only <see cref="LegacyBindable{T}"/> fields or auto-properties.</typeparam>
     public class CachedModelDependencyContainer<TModel> : IReadOnlyDependencyContainer
         where TModel : class, new()
     {
@@ -27,7 +27,7 @@ namespace osu.Framework.Allocation
         /// <remarks>
         /// This model is not injected directly, users of the <see cref="CachedModelDependencyContainer{TModel}"/> receive a shadow-bound copy of this value in all cases.
         /// </remarks>
-        public readonly Bindable<TModel> Model = new Bindable<TModel>();
+        public readonly LegacyBindable<TModel> Model = new LegacyBindable<TModel>();
 
         private readonly TModel shadowModel = new TModel();
 
@@ -118,14 +118,14 @@ namespace osu.Framework.Allocation
                         break;
                 }
 
-                if (shadowValue is IBindable shadowBindable)
+                if (shadowValue is ILegacyBindable shadowBindable)
                 {
                     // Unbind from the last model
-                    if (lastModelValue is IBindable lastModelBindable)
+                    if (lastModelValue is ILegacyBindable lastModelBindable)
                         shadowBindable.UnbindFrom(lastModelBindable);
 
                     // Bind to the new model
-                    if (newModelValue is IBindable newModelBindable)
+                    if (newModelValue is ILegacyBindable newModelBindable)
                         shadowBindable.BindTo(newModelBindable);
                 }
             }
@@ -139,9 +139,9 @@ namespace osu.Framework.Allocation
             {
                 foreach (var field in type.GetFields(activator_flags))
                 {
-                    if (!typeof(IBindable).IsAssignableFrom(field.FieldType))
-                        throw new InvalidOperationException($"The field \"{field.Name}\" does not subclass {nameof(IBindable)}. "
-                                                            + $"All fields or auto-properties of a cached model container's model must subclass {nameof(IBindable)}");
+                    if (!typeof(ILegacyBindable).IsAssignableFrom(field.FieldType))
+                        throw new InvalidOperationException($"The field \"{field.Name}\" does not subclass {nameof(ILegacyBindable)}. "
+                                                            + $"All fields or auto-properties of a cached model container's model must subclass {nameof(ILegacyBindable)}");
                 }
 
                 type = type.BaseType;

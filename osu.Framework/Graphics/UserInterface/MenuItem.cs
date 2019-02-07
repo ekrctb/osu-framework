@@ -12,12 +12,12 @@ namespace osu.Framework.Graphics.UserInterface
         /// <summary>
         /// The text which this <see cref="MenuItem"/> displays.
         /// </summary>
-        public readonly Bindable<string> Text = new Bindable<string>();
+        public readonly LegacyBindable<string> Text = new LegacyBindable<string>();
 
         /// <summary>
         /// The <see cref="Action"/> that is performed when this <see cref="MenuItem"/> is clicked.
         /// </summary>
-        public readonly Bindable<Action> Action = new Bindable<Action>();
+        public readonly LegacyBindable<Action> Action = new LegacyBindable<Action>();
 
         /// <summary>
         /// A list of items which are to be displayed in a sub-menu originating from this <see cref="MenuItem"/>.

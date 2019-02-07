@@ -20,7 +20,7 @@ namespace osu.Framework.Tests.Visual
 
         private GameWindow window;
         private readonly BindableSize sizeFullscreen = new BindableSize();
-        private readonly Bindable<WindowMode> windowMode = new Bindable<WindowMode>();
+        private readonly LegacyBindable<WindowMode> windowMode = new LegacyBindable<WindowMode>();
 
         public TestCaseFullscreen()
         {

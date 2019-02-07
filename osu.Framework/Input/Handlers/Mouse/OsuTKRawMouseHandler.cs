@@ -22,8 +22,8 @@ namespace osu.Framework.Input.Handlers.Mouse
 
         public BindableDouble Sensitivity => sensitivity;
 
-        private readonly Bindable<ConfineMouseMode> confineMode = new Bindable<ConfineMouseMode>();
-        private readonly Bindable<WindowMode> windowMode = new Bindable<WindowMode>();
+        private readonly LegacyBindable<ConfineMouseMode> confineMode = new LegacyBindable<ConfineMouseMode>();
+        private readonly LegacyBindable<WindowMode> windowMode = new LegacyBindable<WindowMode>();
         private readonly BindableBool mapAbsoluteInputToWindow = new BindableBool();
 
         private readonly List<OsuTKMouseState> lastEachDeviceStates = new List<OsuTKMouseState>();

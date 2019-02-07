@@ -13,10 +13,10 @@ using osu.Framework.Lists;
 namespace osu.Framework.Bindables
 {
     /// <summary>
-    /// A generic implementation of a <see cref="IBindable"/>
+    /// A generic implementation of a <see cref="ILegacyBindable"/>
     /// </summary>
     /// <typeparam name="T">The type of our stored <see cref="Value"/>.</typeparam>
-    public class Bindable<T> : IBindable<T>, ISerializableBindable
+    public class LegacyBindable<T> : ILegacyBindable<T>, ISerializableBindable
     {
         /// <summary>
         /// An event which is raised when <see cref="Value"/> has changed (or manually via <see cref="TriggerValueChange"/>).
@@ -54,7 +54,7 @@ namespace osu.Framework.Bindables
             }
         }
 
-        internal void SetDisabled(bool value, bool bypassChecks = false, Bindable<T> source = null)
+        internal void SetDisabled(bool value, bool bypassChecks = false, LegacyBindable<T> source = null)
         {
             if (!bypassChecks)
                 throwIfLeased();
@@ -93,21 +93,21 @@ namespace osu.Framework.Bindables
             }
         }
 
-        internal void SetValue(T value, bool bypassChecks = false, Bindable<T> source = null)
+        internal void SetValue(T value, bool bypassChecks = false, LegacyBindable<T> source = null)
         {
             this.value = value;
             TriggerValueChange(source ?? this, true, bypassChecks);
         }
 
-        private Cached<WeakReference<Bindable<T>>> weakReferenceCache;
+        private Cached<WeakReference<LegacyBindable<T>>> weakReferenceCache;
 
-        private WeakReference<Bindable<T>> weakReference => weakReferenceCache.IsValid ? weakReferenceCache.Value : weakReferenceCache.Value = new WeakReference<Bindable<T>>(this);
+        private WeakReference<LegacyBindable<T>> weakReference => weakReferenceCache.IsValid ? weakReferenceCache.Value : weakReferenceCache.Value = new WeakReference<LegacyBindable<T>>(this);
 
         /// <summary>
         /// Creates a new bindable instance. This is used for deserialization of bindables.
         /// </summary>
         [UsedImplicitly]
-        private Bindable()
+        private LegacyBindable()
             : this(default)
         {
         }
@@ -116,25 +116,25 @@ namespace osu.Framework.Bindables
         /// Creates a new bindable instance.
         /// </summary>
         /// <param name="value">The initial value.</param>
-        public Bindable(T value = default)
+        public LegacyBindable(T value = default)
         {
             this.value = value;
         }
 
-        public static implicit operator T(Bindable<T> value) => value.Value;
+        public static implicit operator T(LegacyBindable<T> value) => value.Value;
 
-        protected LockedWeakList<Bindable<T>> Bindings { get; private set; }
+        protected LockedWeakList<LegacyBindable<T>> Bindings { get; private set; }
 
-        void IBindable.BindTo(IBindable them)
+        void ILegacyBindable.BindTo(ILegacyBindable them)
         {
-            if (!(them is Bindable<T> tThem))
+            if (!(them is LegacyBindable<T> tThem))
                 throw new InvalidCastException($"Can't bind to a bindable of type {them.GetType()} from a bindable of type {GetType()}.");
             BindTo(tThem);
         }
 
-        void IBindable<T>.BindTo(IBindable<T> them)
+        void ILegacyBindable<T>.BindTo(ILegacyBindable<T> them)
         {
-            if (!(them is Bindable<T> tThem))
+            if (!(them is LegacyBindable<T> tThem))
                 throw new InvalidCastException($"Can't bind to a bindable of type {them.GetType()} from a bindable of type {GetType()}.");
             BindTo(tThem);
         }
@@ -144,7 +144,7 @@ namespace osu.Framework.Bindables
         /// This will adopt any values and value limitations of the bindable bound to.
         /// </summary>
         /// <param name="them">The foreign bindable. This should always be the most permanent end of the bind (ie. a ConfigManager).</param>
-        public virtual void BindTo(Bindable<T> them)
+        public virtual void BindTo(LegacyBindable<T> them)
         {
             Value = them.Value;
             Disabled = them.Disabled;
@@ -178,15 +178,15 @@ namespace osu.Framework.Bindables
                 onChange(Disabled);
         }
 
-        private void addWeakReference(WeakReference<Bindable<T>> weakReference)
+        private void addWeakReference(WeakReference<LegacyBindable<T>> weakReference)
         {
             if (Bindings == null)
-                Bindings = new LockedWeakList<Bindable<T>>();
+                Bindings = new LockedWeakList<LegacyBindable<T>>();
 
             Bindings.Add(weakReference);
         }
 
-        private void removeWeakReference(WeakReference<Bindable<T>> weakReference) => Bindings?.Remove(weakReference);
+        private void removeWeakReference(WeakReference<LegacyBindable<T>> weakReference) => Bindings?.Remove(weakReference);
 
         /// <summary>
         /// Parse an object into this instance.
@@ -220,7 +220,7 @@ namespace osu.Framework.Bindables
             TriggerDisabledChange(this, false);
         }
 
-        protected void TriggerValueChange(Bindable<T> source, bool propagateToBindings = true, bool bypassChecks = false)
+        protected void TriggerValueChange(LegacyBindable<T> source, bool propagateToBindings = true, bool bypassChecks = false)
         {
             // check a bound bindable hasn't changed the value again (it will fire its own event)
             T beforePropagation = value;
@@ -234,7 +234,7 @@ namespace osu.Framework.Bindables
                 ValueChanged?.Invoke(value);
         }
 
-        protected void TriggerDisabledChange(Bindable<T> source, bool propagateToBindings = true, bool bypassChecks = false)
+        protected void TriggerDisabledChange(LegacyBindable<T> source, bool propagateToBindings = true, bool bypassChecks = false)
         {
             // check a bound bindable hasn't changed the value again (it will fire its own event)
             bool beforePropagation = disabled;
@@ -258,7 +258,7 @@ namespace osu.Framework.Bindables
         }
 
         /// <summary>
-        /// Remove all bound <see cref="Bindable{T}"/>s via <see cref="GetBoundCopy"/> or <see cref="BindTo"/>.
+        /// Remove all bound <see cref="LegacyBindable{T}"/>s via <see cref="GetBoundCopy"/> or <see cref="BindTo"/>.
         /// </summary>
         public void UnbindBindings()
         {
@@ -266,7 +266,7 @@ namespace osu.Framework.Bindables
             Bindings?.Clear();
         }
 
-        protected void Unbind(Bindable<T> binding) => Bindings.Remove(binding.weakReference);
+        protected void Unbind(LegacyBindable<T> binding) => Bindings.Remove(binding.weakReference);
 
         /// <summary>
         /// Calls <see cref="UnbindEvents"/> and <see cref="UnbindBindings"/>
@@ -279,7 +279,7 @@ namespace osu.Framework.Bindables
 
         public void UnbindFrom(IUnbindable them)
         {
-            if (!(them is Bindable<T> tThem))
+            if (!(them is LegacyBindable<T> tThem))
                 throw new InvalidCastException($"Can't unbind a bindable of type {them.GetType()} from a bindable of type {GetType()}.");
 
             removeWeakReference(tThem.weakReference);
@@ -294,7 +294,7 @@ namespace osu.Framework.Bindables
         /// <summary>
         /// Create an unbound clone of this bindable.
         /// </summary>
-        public Bindable<T> GetUnboundCopy()
+        public LegacyBindable<T> GetUnboundCopy()
         {
             var clone = GetBoundCopy();
             clone.UnbindAll();
@@ -307,16 +307,16 @@ namespace osu.Framework.Bindables
         /// a local reference.
         /// </summary>
         /// <returns>A weakly bound copy of the specified bindable.</returns>
-        public Bindable<T> GetBoundCopy()
+        public LegacyBindable<T> GetBoundCopy()
         {
-            var copy = (Bindable<T>)Activator.CreateInstance(GetType(), Value);
+            var copy = (LegacyBindable<T>)Activator.CreateInstance(GetType(), Value);
             copy.BindTo(this);
             return copy;
         }
 
-        IBindable IBindable.GetBoundCopy() => GetBoundCopy();
+        ILegacyBindable ILegacyBindable.GetBoundCopy() => GetBoundCopy();
 
-        IBindable<T> IBindable<T>.GetBoundCopy() => GetBoundCopy();
+        ILegacyBindable<T> ILegacyBindable<T>.GetBoundCopy() => GetBoundCopy();
 
         void ISerializableBindable.SerializeTo(JsonWriter writer, JsonSerializer serializer)
         {
@@ -347,7 +347,7 @@ namespace osu.Framework.Bindables
             return leasedBindable = new LeasedBindable<T>(this, revertValueOnReturn);
         }
 
-        private bool checkForLease(Bindable<T> source)
+        private bool checkForLease(LegacyBindable<T> source)
         {
             if (isLeased) return true;
 
@@ -364,7 +364,7 @@ namespace osu.Framework.Bindables
         /// Called internally by a <see cref="LeasedBindable{T}"/> to end a lease.
         /// </summary>
         /// <param name="returnedBindable">The <see cref="LeasedBindable{T}"/> that was provided as a return of a <see cref="BeginLease"/> call.</param>
-        internal void EndLease(Bindable<T> returnedBindable)
+        internal void EndLease(LegacyBindable<T> returnedBindable)
         {
             if (!isLeased)
                 throw new InvalidOperationException("Attempted to end a lease without beginning one.");
@@ -378,7 +378,7 @@ namespace osu.Framework.Bindables
         private void throwIfLeased()
         {
             if (isLeased)
-                throw new InvalidOperationException($"Cannot perform this operation on a {nameof(Bindable<T>)} that is currently in a leased state.");
+                throw new InvalidOperationException($"Cannot perform this operation on a {nameof(LegacyBindable<T>)} that is currently in a leased state.");
         }
     }
 }

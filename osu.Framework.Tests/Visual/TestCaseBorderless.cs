@@ -39,7 +39,7 @@ namespace osu.Framework.Tests.Visual
         private static readonly Color4 window_stroke = new Color4(36, 59, 166, 255);
 
         private DesktopGameWindow window;
-        private readonly Bindable<WindowMode> windowMode = new Bindable<WindowMode>();
+        private readonly LegacyBindable<WindowMode> windowMode = new LegacyBindable<WindowMode>();
 
         public TestCaseBorderless()
         {

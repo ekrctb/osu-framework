@@ -7,7 +7,7 @@ using System.Globalization;
 
 namespace osu.Framework.Bindables
 {
-    public abstract class BindableNumber<T> : Bindable<T>, IBindableNumber<T>
+    public abstract class BindableNumber<T> : LegacyBindable<T>, IBindableNumber<T>
         where T : struct, IComparable, IConvertible
     {
         static BindableNumber()
@@ -193,7 +193,7 @@ namespace osu.Framework.Bindables
                 MaxValueChanged?.Invoke(maxValue);
         }
 
-        public override void BindTo(Bindable<T> them)
+        public override void BindTo(LegacyBindable<T> them)
         {
             if (them is BindableNumber<T> other)
             {

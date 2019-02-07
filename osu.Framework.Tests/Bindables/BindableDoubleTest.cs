@@ -67,7 +67,7 @@ namespace osu.Framework.Tests.Bindables
         public void TestPropagationToPlainBindable()
         {
             var number = new BindableDouble(1000);
-            var bindable = new Bindable<double>();
+            var bindable = new LegacyBindable<double>();
 
             bindable.BindTo(number);
 

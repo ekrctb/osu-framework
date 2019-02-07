@@ -14,7 +14,7 @@ namespace osu.Framework.Tests.Visual
 {
     public class TestCaseCountingText : TestCase
     {
-        private readonly Bindable<CountType> countType = new Bindable<CountType>();
+        private readonly LegacyBindable<CountType> countType = new LegacyBindable<CountType>();
 
         public TestCaseCountingText()
         {

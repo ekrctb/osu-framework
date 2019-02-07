@@ -5,7 +5,7 @@ using System;
 
 namespace osu.Framework.Bindables
 {
-    public interface IBindableNumber<T> : IBindable<T>
+    public interface IBindableNumber<T> : ILegacyBindable<T>
     {
         /// <summary>
         /// An event which is raised when <see cref="Precision"/> has changed.

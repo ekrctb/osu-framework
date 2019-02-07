@@ -7,15 +7,15 @@ using osu.Framework.Configuration;
 namespace osu.Framework.Bindables
 {
     /// <summary>
-    /// An interface which can be bound to other <see cref="IBindable"/>s in order to watch for (and react to) <see cref="IBindable.Disabled"/> changes.
+    /// An interface which can be bound to other <see cref="ILegacyBindable"/>s in order to watch for (and react to) <see cref="ILegacyBindable.Disabled"/> changes.
     /// </summary>
-    public interface IBindable : IParseable, ICanBeDisabled, IHasDefaultValue, IUnbindable
+    public interface ILegacyBindable : IParseable, ICanBeDisabled, IHasDefaultValue, IUnbindable
     {
         /// <summary>
         /// Binds ourselves to another bindable such that we receive any value limitations of the bindable we bind width.
         /// </summary>
         /// <param name="them">The foreign bindable. This should always be the most permanent end of the bind (ie. a ConfigManager)</param>
-        void BindTo(IBindable them);
+        void BindTo(ILegacyBindable them);
 
         /// <summary>
         /// Retrieve a new bindable instance weakly bound to the configuration backing.
@@ -23,14 +23,14 @@ namespace osu.Framework.Bindables
         /// a local reference.
         /// </summary>
         /// <returns>A weakly bound copy of the specified bindable.</returns>
-        IBindable GetBoundCopy();
+        ILegacyBindable GetBoundCopy();
     }
 
     /// <summary>
-    /// An interface which can be bound to other <see cref="IBindable{T}"/>s in order to watch for (and react to) <see cref="IBindable{T}.Disabled"/> and <see cref="IBindable{T}.Value"/> changes.
+    /// An interface which can be bound to other <see cref="ILegacyBindable{T}"/>s in order to watch for (and react to) <see cref="ILegacyBindable{T}.Disabled"/> and <see cref="ILegacyBindable{T}.Value"/> changes.
     /// </summary>
-    /// <typeparam name="T">The type of value encapsulated by this <see cref="IBindable{T}"/>.</typeparam>
-    public interface IBindable<T> : IBindable
+    /// <typeparam name="T">The type of value encapsulated by this <see cref="ILegacyBindable{T}"/>.</typeparam>
+    public interface ILegacyBindable<T> : ILegacyBindable
     {
         /// <summary>
         /// An event which is raised when <see cref="Value"/> has changed.
@@ -43,7 +43,7 @@ namespace osu.Framework.Bindables
         T Value { get; }
 
         /// <summary>
-        /// The default value of this bindable. Used when querying <see cref="IBindable{T}.IsDefault"/>.
+        /// The default value of this bindable. Used when querying <see cref="ILegacyBindable{T}.IsDefault"/>.
         /// </summary>
         T Default { get; }
 
@@ -51,7 +51,7 @@ namespace osu.Framework.Bindables
         /// Binds ourselves to another bindable such that we receive any values and value limitations of the bindable we bind width.
         /// </summary>
         /// <param name="them">The foreign bindable. This should always be the most permanent end of the bind (ie. a ConfigManager)</param>
-        void BindTo(IBindable<T> them);
+        void BindTo(ILegacyBindable<T> them);
 
         /// <summary>
         /// Bind an action to <see cref="ValueChanged"/> with the option of running the bound action once immediately.
@@ -66,6 +66,6 @@ namespace osu.Framework.Bindables
         /// a local reference.
         /// </summary>
         /// <returns>A weakly bound copy of the specified bindable.</returns>
-        new IBindable<T> GetBoundCopy();
+        new ILegacyBindable<T> GetBoundCopy();
     }
 }

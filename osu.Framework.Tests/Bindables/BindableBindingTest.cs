@@ -16,8 +16,8 @@ namespace osu.Framework.Tests.Bindables
         [Test]
         public void TestPropagation()
         {
-            Bindable<string> bindable1 = new Bindable<string>("default");
-            Bindable<string> bindable2 = bindable1.GetBoundCopy();
+            LegacyBindable<string> bindable1 = new LegacyBindable<string>("default");
+            LegacyBindable<string> bindable2 = bindable1.GetBoundCopy();
 
             Assert.AreEqual("default", bindable1.Value);
             Assert.AreEqual(bindable2.Value, bindable1.Value);
@@ -31,8 +31,8 @@ namespace osu.Framework.Tests.Bindables
         [Test]
         public void TestDisabled()
         {
-            Bindable<string> bindable1 = new Bindable<string>("default");
-            Bindable<string> bindable2 = bindable1.GetBoundCopy();
+            LegacyBindable<string> bindable1 = new LegacyBindable<string>("default");
+            LegacyBindable<string> bindable2 = bindable1.GetBoundCopy();
 
             bindable1.Disabled = true;
 
@@ -55,8 +55,8 @@ namespace osu.Framework.Tests.Bindables
         [Test]
         public void TestValueChanged()
         {
-            Bindable<string> bindable1 = new Bindable<string>("default");
-            Bindable<string> bindable2 = bindable1.GetBoundCopy();
+            LegacyBindable<string> bindable1 = new LegacyBindable<string>("default");
+            LegacyBindable<string> bindable2 = bindable1.GetBoundCopy();
 
             int changed1 = 0, changed2 = 0;
 
@@ -83,8 +83,8 @@ namespace osu.Framework.Tests.Bindables
         [Test]
         public void TestValueChangedWithUpstreamRejection()
         {
-            Bindable<string> bindable1 = new Bindable<string>("won't change");
-            Bindable<string> bindable2 = bindable1.GetBoundCopy();
+            LegacyBindable<string> bindable1 = new LegacyBindable<string>("won't change");
+            LegacyBindable<string> bindable2 = bindable1.GetBoundCopy();
 
             int changed1 = 0, changed2 = 0;
 
@@ -108,8 +108,8 @@ namespace osu.Framework.Tests.Bindables
         [Test]
         public void TestDisabledChanged()
         {
-            Bindable<string> bindable1 = new Bindable<string>("default");
-            Bindable<string> bindable2 = bindable1.GetBoundCopy();
+            LegacyBindable<string> bindable1 = new LegacyBindable<string>("default");
+            LegacyBindable<string> bindable2 = bindable1.GetBoundCopy();
 
             bool disabled1 = false, disabled2 = false;
 
@@ -130,8 +130,8 @@ namespace osu.Framework.Tests.Bindables
         [Test]
         public void TestDisabledChangedWithUpstreamRejection()
         {
-            Bindable<string> bindable1 = new Bindable<string>("won't change");
-            Bindable<string> bindable2 = bindable1.GetBoundCopy();
+            LegacyBindable<string> bindable1 = new LegacyBindable<string>("won't change");
+            LegacyBindable<string> bindable2 = bindable1.GetBoundCopy();
 
             int changed1 = 0, changed2 = 0;
 
@@ -296,7 +296,7 @@ namespace osu.Framework.Tests.Bindables
         [Test]
         public void TestUnbindOnDrawableDisposeProperty()
         {
-            var bindable = new Bindable<int>();
+            var bindable = new LegacyBindable<int>();
 
             bool valueChanged = false;
             bindable.ValueChanged += _ => valueChanged = true;
@@ -326,8 +326,8 @@ namespace osu.Framework.Tests.Bindables
         [Test]
         public void TestUnbindFrom()
         {
-            var bindable1 = new Bindable<int>(5);
-            var bindable2 = new Bindable<int>();
+            var bindable1 = new LegacyBindable<int>(5);
+            var bindable2 = new LegacyBindable<int>();
             bindable2.BindTo(bindable1);
 
             Assert.AreEqual(bindable1.Value, bindable2.Value);
@@ -342,7 +342,7 @@ namespace osu.Framework.Tests.Bindables
         {
             public bool ValueChanged;
 
-            private readonly Bindable<int> bindable = new Bindable<int>();
+            private readonly LegacyBindable<int> bindable = new LegacyBindable<int>();
 
             public TestDrawable()
             {
@@ -359,7 +359,7 @@ namespace osu.Framework.Tests.Bindables
         {
             public bool ValueChanged2;
 
-            private readonly Bindable<int> bindable = new Bindable<int>();
+            private readonly LegacyBindable<int> bindable = new LegacyBindable<int>();
 
             public TestSubDrawable()
             {
@@ -375,8 +375,8 @@ namespace osu.Framework.Tests.Bindables
 
         private class TestDrawable2 : Drawable
         {
-            public Func<Bindable<int>> GetBindable;
-            private Bindable<int> bindable => GetBindable();
+            public Func<LegacyBindable<int>> GetBindable;
+            private LegacyBindable<int> bindable => GetBindable();
 
             public TestDrawable2()
             {

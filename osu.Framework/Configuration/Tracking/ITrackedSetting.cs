@@ -17,14 +17,14 @@ namespace osu.Framework.Configuration.Tracking
         event Action<SettingDescription> SettingChanged;
 
         /// <summary>
-        /// Loads a <see cref="Bindable{T}"/> into this tracked setting, binding to <see cref="SettingChanged"/>.
+        /// Loads a <see cref="LegacyBindable{T}"/> into this tracked setting, binding to <see cref="SettingChanged"/>.
         /// </summary>
         /// <param name="configManager">The <see cref="ConfigManager{T}"/> to load from.</param>
         void LoadFrom<T>(ConfigManager<T> configManager)
             where T : struct;
 
         /// <summary>
-        /// Unloads the <see cref="Bindable{T}"/> from this tracked setting, unbinding from <see cref="SettingChanged"/>.
+        /// Unloads the <see cref="LegacyBindable{T}"/> from this tracked setting, unbinding from <see cref="SettingChanged"/>.
         /// </summary>
         void Unload();
     }

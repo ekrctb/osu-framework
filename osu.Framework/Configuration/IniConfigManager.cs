@@ -52,7 +52,7 @@ namespace osu.Framework.Configuration
                         if (!Enum.TryParse(key, out T lookup))
                             continue;
 
-                        if (ConfigStore.TryGetValue(lookup, out IBindable b))
+                        if (ConfigStore.TryGetValue(lookup, out ILegacyBindable b))
                             try
                             {
                                 b.Parse(val);

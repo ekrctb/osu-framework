@@ -9,14 +9,14 @@ namespace osu.Framework.Localisation
 {
     public partial class LocalisationManager
     {
-        private class LocalisedBindableString : Bindable<string>, ILocalisedBindableString
+        private class LocalisedBindableString : LegacyBindable<string>, ILocalisedBindableString
         {
-            private readonly IBindable<IResourceStore<string>> storage = new Bindable<IResourceStore<string>>();
-            private readonly IBindable<bool> preferUnicode = new Bindable<bool>();
+            private readonly ILegacyBindable<IResourceStore<string>> storage = new LegacyBindable<IResourceStore<string>>();
+            private readonly ILegacyBindable<bool> preferUnicode = new LegacyBindable<bool>();
 
             private LocalisedString text;
 
-            public LocalisedBindableString(LocalisedString text, IBindable<IResourceStore<string>> storage, IBindable<bool> preferUnicode)
+            public LocalisedBindableString(LocalisedString text, ILegacyBindable<IResourceStore<string>> storage, ILegacyBindable<bool> preferUnicode)
             {
                 this.text = text;
 

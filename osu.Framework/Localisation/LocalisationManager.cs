@@ -14,9 +14,9 @@ namespace osu.Framework.Localisation
     {
         private readonly List<LocaleMapping> locales = new List<LocaleMapping>();
 
-        private readonly Bindable<bool> preferUnicode;
-        private readonly Bindable<string> configLocale;
-        private readonly Bindable<IResourceStore<string>> currentStorage = new Bindable<IResourceStore<string>>();
+        private readonly LegacyBindable<bool> preferUnicode;
+        private readonly LegacyBindable<string> configLocale;
+        private readonly LegacyBindable<IResourceStore<string>> currentStorage = new LegacyBindable<IResourceStore<string>>();
 
         public LocalisationManager(FrameworkConfigManager config)
         {

@@ -6,17 +6,17 @@ using osu.Framework.Bindables;
 namespace osu.Framework.Graphics.UserInterface
 {
     /// <summary>
-    /// A UI element which supports a <see cref="Bindable{T}"/> current value.
-    /// You can bind to <see cref="Current"/>'s <see cref="Bindable{T}.ValueChanged"/> to get updates.
+    /// A UI element which supports a <see cref="LegacyBindable{T}"/> current value.
+    /// You can bind to <see cref="Current"/>'s <see cref="LegacyBindable{T}.ValueChanged"/> to get updates.
     /// </summary>
     public interface IHasCurrentValue<T>
     {
         /// <summary>
-        /// Gets or sets the <see cref="Bindable{T}"/> that provides the current value.
+        /// Gets or sets the <see cref="LegacyBindable{T}"/> that provides the current value.
         /// </summary>
         /// <remarks>
-        /// A provided <see cref="Bindable{T}"/> will be bound to, rather than be stored internally.
+        /// A provided <see cref="LegacyBindable{T}"/> will be bound to, rather than be stored internally.
         /// </remarks>
-        Bindable<T> Current { get; set; }
+        LegacyBindable<T> Current { get; set; }
     }
 }

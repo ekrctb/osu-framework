@@ -22,7 +22,7 @@ namespace osu.Framework.Graphics.Visualisation
 
         protected override bool BlockPositionalInput => false;
 
-        private Bindable<bool> enabled;
+        private LegacyBindable<bool> enabled;
 
         private StopwatchClock clock;
 

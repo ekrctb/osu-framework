@@ -5,7 +5,7 @@ using System;
 
 namespace osu.Framework.Bindables
 {
-    public class NonNullableBindable<T> : Bindable<T>
+    public class NonNullableBindable<T> : LegacyBindable<T>
     {
         public NonNullableBindable(T defaultValue)
         {

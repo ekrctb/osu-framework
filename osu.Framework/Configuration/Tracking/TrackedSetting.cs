@@ -17,7 +17,7 @@ namespace osu.Framework.Configuration.Tracking
         private readonly object setting;
         private readonly Func<U, SettingDescription> generateDescription;
 
-        private Bindable<U> bindable;
+        private LegacyBindable<U> bindable;
 
         /// <summary>
         /// Constructs a new <see cref="TrackedSetting{U}"/>.

@@ -10,12 +10,12 @@ namespace osu.Framework.Tests.Bindables
     [TestFixture]
     public class BindableLeasingTest
     {
-        private Bindable<int> original;
+        private LegacyBindable<int> original;
 
         [SetUp]
         public void SetUp()
         {
-            original = new Bindable<int>(1);
+            original = new LegacyBindable<int>(1);
         }
 
         [TestCase(false)]

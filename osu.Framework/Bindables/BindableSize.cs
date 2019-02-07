@@ -6,7 +6,7 @@ using System.Drawing;
 
 namespace osu.Framework.Bindables
 {
-    public class BindableSize : Bindable<Size>
+    public class BindableSize : LegacyBindable<Size>
     {
         public BindableSize(Size value = default)
             : base(value)
@@ -27,7 +27,7 @@ namespace osu.Framework.Bindables
             set => base.Value = clamp(value, MinValue, MaxValue);
         }
 
-        public override void BindTo(Bindable<Size> them)
+        public override void BindTo(LegacyBindable<Size> them)
         {
             if (them is BindableSize other)
             {

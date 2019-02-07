@@ -411,10 +411,10 @@ namespace osu.Framework.Graphics
             container.TransformTo(nameof(container.EdgeEffect), newParameters, duration, easing);
 
         /// <summary>
-        /// Smoothly adjusts the value of a <see cref="Bindable{TValue}"/> over time.
+        /// Smoothly adjusts the value of a <see cref="LegacyBindable{T}"/> over time.
         /// </summary>
         /// <returns>A <see cref="TransformSequence{T}"/> to which further transforms can be added.</returns>
-        public static TransformSequence<T> TransformBindableTo<T, TValue>(this T drawable, [NotNull] Bindable<TValue> bindable, TValue newValue, double duration = 0, Easing easing = Easing.None,
+        public static TransformSequence<T> TransformBindableTo<T, TValue>(this T drawable, [NotNull] LegacyBindable<TValue> bindable, TValue newValue, double duration = 0, Easing easing = Easing.None,
                                                                           InterpolationFunc<TValue> interpolationFunc = null)
             where T : ITransformable =>
             drawable.TransformTo(drawable.PopulateTransform(new TransformBindable<TValue, T>(bindable, interpolationFunc), newValue, duration, easing));

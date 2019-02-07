@@ -55,7 +55,7 @@ namespace osu.Framework.Audio
         /// The preferred audio device we should use. A value of
         /// <see cref="string.Empty"/> denotes the OS default.
         /// </summary>
-        public readonly Bindable<string> AudioDevice = new Bindable<string>();
+        public readonly LegacyBindable<string> AudioDevice = new LegacyBindable<string>();
 
         private string currentAudioDevice;
 

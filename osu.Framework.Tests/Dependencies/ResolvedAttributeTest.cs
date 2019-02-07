@@ -171,9 +171,9 @@ namespace osu.Framework.Tests.Dependencies
         {
             var receiver = new Receiver16();
 
-            var bindable = new Bindable<int>(10);
+            var bindable = new LegacyBindable<int>(10);
             var dependencies = createDependencies(bindable);
-            dependencies.CacheAs<IBindable<int>>(bindable);
+            dependencies.CacheAs<ILegacyBindable<int>>(bindable);
 
             dependencies.Inject(receiver);
 
@@ -298,10 +298,10 @@ namespace osu.Framework.Tests.Dependencies
         private class Receiver16
         {
             [Resolved]
-            public Bindable<int> Obj { get; private set; }
+            public LegacyBindable<int> Obj { get; private set; }
 
             [Resolved]
-            public IBindable<int> Obj2 { get; private set; }
+            public ILegacyBindable<int> Obj2 { get; private set; }
         }
     }
 }

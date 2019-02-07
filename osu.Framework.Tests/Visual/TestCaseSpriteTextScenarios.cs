@@ -217,7 +217,7 @@ namespace osu.Framework.Tests.Visual
                 }
             };
 
-            Bindable<string> boundString = new Bindable<string>("bindable: 0");
+            LegacyBindable<string> boundString = new LegacyBindable<string>("bindable: 0");
             int boundStringValue = 0;
 
             Cell(2, 4).Child = new LocalisableTestContainer

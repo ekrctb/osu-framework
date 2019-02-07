@@ -31,7 +31,7 @@ namespace osu.Framework.Tests.Visual
 
         private Button button;
         private TrackBass track;
-        private readonly Bindable<float> zoom = new BindableFloat(1) { MinValue = 0.1f, MaxValue = 20 };
+        private readonly LegacyBindable<float> zoom = new BindableFloat(1) { MinValue = 0.1f, MaxValue = 20 };
 
         [BackgroundDependencyLoader]
         private void load(Game game, AudioManager audio)

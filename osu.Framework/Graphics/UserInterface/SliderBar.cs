@@ -38,7 +38,7 @@ namespace osu.Framework.Graphics.UserInterface
         /// </summary>
         public bool TransferValueOnCommit;
 
-        public Bindable<T> Current
+        public LegacyBindable<T> Current
         {
             get => CurrentNumber;
             set

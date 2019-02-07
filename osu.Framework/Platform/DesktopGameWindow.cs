@@ -25,14 +25,14 @@ namespace osu.Framework.Platform
 
         private readonly BindableDouble windowPositionX = new BindableDouble();
         private readonly BindableDouble windowPositionY = new BindableDouble();
-        private readonly Bindable<DisplayIndex> windowDisplayIndex = new Bindable<DisplayIndex>();
+        private readonly LegacyBindable<DisplayIndex> windowDisplayIndex = new LegacyBindable<DisplayIndex>();
 
         private DisplayDevice lastFullscreenDisplay;
         private bool inWindowModeTransition;
 
-        public readonly Bindable<WindowMode> WindowMode = new Bindable<WindowMode>();
+        public readonly LegacyBindable<WindowMode> WindowMode = new LegacyBindable<WindowMode>();
 
-        public readonly Bindable<ConfineMouseMode> ConfineMouseMode = new Bindable<ConfineMouseMode>();
+        public readonly LegacyBindable<ConfineMouseMode> ConfineMouseMode = new LegacyBindable<ConfineMouseMode>();
 
         public override IGraphicsContext Context => Implementation.Context;
 

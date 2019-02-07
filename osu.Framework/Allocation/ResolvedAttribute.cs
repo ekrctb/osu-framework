@@ -109,7 +109,7 @@ namespace osu.Framework.Allocation
             if (val == null && !permitNulls)
                 throw new DependencyNotRegisteredException(requestingType, type);
 
-            if (val is IBindable bindableVal)
+            if (val is ILegacyBindable bindableVal)
                 return bindableVal.GetBoundCopy();
 
             return val;

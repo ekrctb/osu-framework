@@ -16,7 +16,7 @@ namespace osu.Framework.Configuration
     {
         protected virtual bool AddMissingEntries => true;
 
-        protected readonly Dictionary<T, IBindable> ConfigStore = new Dictionary<T, IBindable>();
+        protected readonly Dictionary<T, ILegacyBindable> ConfigStore = new Dictionary<T, ILegacyBindable>();
 
         protected virtual void InitialiseDefaults()
         {
@@ -117,9 +117,9 @@ namespace osu.Framework.Configuration
             return bindable;
         }
 
-        public Bindable<U> Set<U>(T lookup, U value)
+        public LegacyBindable<U> Set<U>(T lookup, U value)
         {
-            Bindable<U> bindable = GetOriginalBindable<U>(lookup);
+            LegacyBindable<U> bindable = GetOriginalBindable<U>(lookup);
 
             if (bindable == null)
                 bindable = set(lookup, value);
@@ -131,25 +131,25 @@ namespace osu.Framework.Configuration
             return bindable;
         }
 
-        protected virtual void AddBindable<TBindable>(T lookup, Bindable<TBindable> bindable)
+        protected virtual void AddBindable<TBindable>(T lookup, LegacyBindable<TBindable> bindable)
         {
             ConfigStore[lookup] = bindable;
             bindable.ValueChanged += _ => backgroundSave();
         }
 
-        private Bindable<U> set<U>(T lookup, U value)
+        private LegacyBindable<U> set<U>(T lookup, U value)
         {
-            Bindable<U> bindable = new Bindable<U>(value);
+            LegacyBindable<U> bindable = new LegacyBindable<U>(value);
             AddBindable(lookup, bindable);
             return bindable;
         }
 
         public U Get<U>(T lookup) => GetOriginalBindable<U>(lookup).Value;
 
-        protected Bindable<U> GetOriginalBindable<U>(T lookup)
+        protected LegacyBindable<U> GetOriginalBindable<U>(T lookup)
         {
-            if (ConfigStore.TryGetValue(lookup, out IBindable obj))
-                return obj as Bindable<U>;
+            if (ConfigStore.TryGetValue(lookup, out ILegacyBindable obj))
+                return obj as LegacyBindable<U>;
 
             return null;
         }
@@ -160,12 +160,12 @@ namespace osu.Framework.Configuration
         /// a local reference.
         /// </summary>
         /// <returns>A weakly bound copy of the specified bindable.</returns>
-        public Bindable<U> GetBindable<U>(T lookup) => GetOriginalBindable<U>(lookup)?.GetBoundCopy();
+        public LegacyBindable<U> GetBindable<U>(T lookup) => GetOriginalBindable<U>(lookup)?.GetBoundCopy();
 
         /// <summary>
         /// Binds a local bindable with a configuration-backed bindable.
         /// </summary>
-        public void BindWith<U>(T lookup, Bindable<U> bindable) => bindable.BindTo(GetOriginalBindable<U>(lookup));
+        public void BindWith<U>(T lookup, LegacyBindable<U> bindable) => bindable.BindTo(GetOriginalBindable<U>(lookup));
 
         #region IDisposable Support
 

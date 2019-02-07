@@ -8,7 +8,7 @@ using osu.Framework.Bindables;
 namespace osu.Framework.IO.Serialization
 {
     /// <summary>
-    /// A converter used for serializing/deserializing <see cref="Bindable{T}"/> objects.
+    /// A converter used for serializing/deserializing <see cref="LegacyBindable{T}"/> objects.
     /// </summary>
     internal class BindableJsonConverter : JsonConverter
     {

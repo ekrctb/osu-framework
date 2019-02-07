@@ -559,9 +559,9 @@ namespace osu.Framework.Graphics.UserInterface
             set => Placeholder.Text = value;
         }
 
-        private readonly Bindable<string> current = new Bindable<string>();
+        private readonly LegacyBindable<string> current = new LegacyBindable<string>();
 
-        public Bindable<string> Current
+        public LegacyBindable<string> Current
         {
             get => current;
             set
