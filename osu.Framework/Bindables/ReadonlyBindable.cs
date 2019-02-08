@@ -6,14 +6,22 @@ using JetBrains.Annotations;
 
 namespace osu.Framework.Bindables
 {
-    public struct ReadonlyBindable<T> : IReadonlyBindable<T>
+    public class ReadonlyBindable<T> : IReadonlyBindable<T>
     {
+        public T Value => content.Value;
+
+        public IBindableView<T> View => content;
         private readonly ulong id;
 
         [NotNull]
         private readonly BindableContent<T> content;
 
-        public static readonly ReadonlyBindable<T> DEFAULT = new ReadonlyBindable<T>((T)default);
+        private static readonly BindableContent<T> default_content = new BindableContent<T>(default);
+
+        public ReadonlyBindable()
+            : this(default_content)
+        {
+        }
 
         public ReadonlyBindable(T value)
             : this(new BindableContent<T>(value))
@@ -26,17 +34,18 @@ namespace osu.Framework.Bindables
             this.content = content;
         }
 
-        public T Value => content.Value;
+        #region Disposal
 
-        public ReadonlyBindable<T> GetReadonlyBindable()
+        public void Dispose()
         {
-            return content.GetReadonlyBindable();
+            ClearValueChanged();
         }
 
-        public event Action<T> ValueChanged
+        #endregion
+
+        public IReadonlyBindable<T> GetReadonlyBindable()
         {
-            add => content.Callbacks.Add(id, value);
-            remove => content.Callbacks.Remove(id, value);
+            return content.GetReadonlyBindable();
         }
 
         public void ClearValueChanged()
@@ -44,11 +53,10 @@ namespace osu.Framework.Bindables
             content.Callbacks.Clear(id);
         }
 
-        public IBindableView<T> View => content;
-
-        public void Dispose()
+        public event Action<T> ValueChanged
         {
-            ClearValueChanged();
+            add => content.Callbacks.Add(id, value);
+            remove => content.Callbacks.Remove(id, value);
         }
     }
 }

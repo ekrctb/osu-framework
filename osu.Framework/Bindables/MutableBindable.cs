@@ -10,7 +10,6 @@ namespace osu.Framework.Bindables
     {
         private readonly ulong id;
 
-        [NotNull]
         private readonly BindableContent<T> content;
 
         public MutableBindable(T value)
@@ -18,7 +17,7 @@ namespace osu.Framework.Bindables
         {
         }
 
-        internal MutableBindable(BindableContent<T> content)
+        internal MutableBindable([NotNull] BindableContent<T> content)
         {
             id = content.GetId();
             this.content = content;
@@ -35,7 +34,7 @@ namespace osu.Framework.Bindables
             content.TriggerValueChange();
         }
 
-        public ReadonlyBindable<T> GetReadonlyBindable()
+        public IReadonlyBindable<T> GetReadonlyBindable()
         {
             return content.GetReadonlyBindable();
         }

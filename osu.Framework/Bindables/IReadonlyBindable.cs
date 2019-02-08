@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using JetBrains.Annotations;
 
 namespace osu.Framework.Bindables
 {
@@ -10,9 +11,11 @@ namespace osu.Framework.Bindables
         void ClearValueChanged();
     }
 
-    public interface IReadonlyBindable<T> : IBindableView<T>, IReadonlyBindable
+    public interface IReadonlyBindable<out T> : IBindableView<T>, IReadonlyBindable
     {
+        [NotNull]
         IBindableView<T> View { get; }
+
         event Action<T> ValueChanged;
     }
 }

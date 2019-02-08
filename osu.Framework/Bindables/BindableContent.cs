@@ -34,7 +34,7 @@ namespace osu.Framework.Bindables
             Callbacks.Trigger(value);
         }
 
-        public ReadonlyBindable<T> GetReadonlyBindable()
+        public IReadonlyBindable<T> GetReadonlyBindable()
         {
             return new ReadonlyBindable<T>(this);
         }
