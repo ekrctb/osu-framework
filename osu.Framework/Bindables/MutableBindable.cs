@@ -6,11 +6,25 @@ using JetBrains.Annotations;
 
 namespace osu.Framework.Bindables
 {
-    public struct MutableBindable<T> : IReadonlyBindable<T>, IMutableBindableView<T>
+    public sealed class MutableBindable<T> : IReadonlyBindable<T>, IMutableBindableView<T>
     {
+        public IBindableView<T> View => content;
+
+        public T Value
+        {
+            get => content.Value;
+            set => content.Value = value;
+        }
+
         private readonly ulong id;
 
+        [NotNull]
         private readonly BindableContent<T> content;
+
+        public MutableBindable()
+            : this((T)default)
+        {
+        }
 
         public MutableBindable(T value)
             : this(new BindableContent<T>(value))
@@ -23,11 +37,14 @@ namespace osu.Framework.Bindables
             this.content = content;
         }
 
-        public T Value
+        #region Disposal
+
+        public void Dispose()
         {
-            get => content.Value;
-            set => content.Value = value;
+            ClearValueChanged();
         }
+
+        #endregion
 
         public void TriggerValueChange()
         {
@@ -44,22 +61,15 @@ namespace osu.Framework.Bindables
             return content.GetMutableBindable();
         }
 
-        public IBindableView<T> View => content;
-
-        public event Action<T> ValueChanged
-        {
-            add => content.Callbacks.Add(id, value);
-            remove => content.Callbacks.Remove(id, value);
-        }
-
         public void ClearValueChanged()
         {
             content.Callbacks.Clear(id);
         }
 
-        public void Dispose()
+        public event Action<T> ValueChanged
         {
-            ClearValueChanged();
+            add => content.Callbacks.Add(id, value);
+            remove => content.Callbacks.Remove(id, value);
         }
     }
 }

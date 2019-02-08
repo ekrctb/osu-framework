@@ -6,7 +6,7 @@ using JetBrains.Annotations;
 
 namespace osu.Framework.Bindables
 {
-    public class ReadonlyBindable<T> : IReadonlyBindable<T>
+    public sealed class ReadonlyBindable<T> : IReadonlyBindable<T>
     {
         public T Value => content.Value;
 
