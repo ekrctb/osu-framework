@@ -567,12 +567,13 @@ namespace osu.Framework.Platform
 
             Dependencies.Cache(root);
             Dependencies.CacheAs(game);
+            Dependencies.CacheAs<IBindableView<IFrameBasedClock>>(new ReadonlyBindable<IFrameBasedClock>(SceneGraphClock));
 
             game.SetHost(this);
 
             try
             {
-                root.Load(SceneGraphClock, Dependencies);
+                root.Load(Dependencies);
             }
             catch (DependencyInjectionException die)
             {

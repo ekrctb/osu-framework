@@ -6,6 +6,7 @@ using System.Threading;
 using osu.Framework.Statistics;
 using osu.Framework.Timing;
 using System.Collections.Generic;
+using osu.Framework.Bindables;
 
 namespace osu.Framework.Threading
 {
@@ -91,7 +92,7 @@ namespace osu.Framework.Threading
             Clock = new ThrottledFrameClock();
             if (monitorPerformance)
                 Monitor = new PerformanceMonitor(Clock, Thread, StatisticsCounters);
-            Scheduler = new Scheduler(null, Clock);
+            Scheduler = new Scheduler(null, new ReadonlyBindable<IClock>(Clock));
         }
 
         public void WaitUntilInitialized()

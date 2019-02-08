@@ -21,7 +21,6 @@ using osu.Framework.Platform;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Input.Bindings;
 using osu.Framework.Input.Events;
-using osu.Framework.Timing;
 
 namespace osu.Framework.Graphics.UserInterface
 {
@@ -90,10 +89,11 @@ namespace osu.Framework.Graphics.UserInterface
 
         public OnCommitHandler OnCommit;
 
-        private readonly Scheduler textUpdateScheduler = new Scheduler();
+        private readonly Scheduler textUpdateScheduler;
 
         public TextBox()
         {
+            textUpdateScheduler = new Scheduler(null, ClockView);
             Masking = true;
             CornerRadius = 3;
 
@@ -153,12 +153,6 @@ namespace osu.Framework.Graphics.UserInterface
         {
             base.LoadComplete();
             textUpdateScheduler.SetCurrentThread(MainThread);
-        }
-
-        internal override void UpdateClock(IFrameBasedClock clock)
-        {
-            base.UpdateClock(clock);
-            textUpdateScheduler.UpdateClock(Clock);
         }
 
         private void resetSelection()

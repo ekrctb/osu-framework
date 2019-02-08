@@ -349,7 +349,10 @@ namespace osu.Framework.Tests.Bindables
                 bindable.BindValueChanged(_ => ValueChanged = true);
 
                 // because we are run outside of a game instance but need the cached disposal methods.
-                Load(new FramedClock(), new DependencyContainer());
+                var dependency = new DependencyContainer();
+                // todo: refactor this
+                dependency.CacheAs<IBindableView<IFrameBasedClock>>(new ReadonlyBindable<IFrameBasedClock>());
+                Load(dependency);
             }
 
             public virtual void SetValue(int value) => bindable.Value = value;
@@ -381,7 +384,10 @@ namespace osu.Framework.Tests.Bindables
             public TestDrawable2()
             {
                 // because we are run outside of a game instance but need the cached disposal methods.
-                Load(new FramedClock(), new DependencyContainer());
+                var dependency = new DependencyContainer();
+                // todo: refactor this
+                dependency.CacheAs<IBindableView<IFrameBasedClock>>(new ReadonlyBindable<IFrameBasedClock>());
+                Load(dependency);
             }
 
             public void SetValue(int value) => bindable.Value = value;

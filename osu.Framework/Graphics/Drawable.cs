@@ -23,6 +23,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using JetBrains.Annotations;
 using osu.Framework.Bindables;
 using osu.Framework.Development;
 using osu.Framework.Graphics.Cursor;
@@ -52,7 +53,9 @@ namespace osu.Framework.Graphics
 
         protected Drawable()
         {
-            scheduler = new Lazy<Scheduler>(() => new Scheduler(MainThread, Clock));
+            clockChoice = new MutableBindable<IBindableView<IFrameBasedClock>>(new ReadonlyBindable<IFrameBasedClock>());
+            clockView = clockChoice.Flatten();
+            scheduler = new Lazy<Scheduler>(() => new Scheduler(MainThread, ClockView));
         }
 
         ~Drawable()
@@ -212,9 +215,8 @@ namespace osu.Framework.Graphics
         /// <summary>
         /// Loads this drawable, including the gathering of dependencies and initialisation of required resources.
         /// </summary>
-        /// <param name="clock">The clock we should use by default.</param>
         /// <param name="dependencies">The dependency tree we will inherit by default. May be extended via <see cref="CompositeDrawable.CreateChildDependencies"/></param>
-        internal void Load(IFrameBasedClock clock, IReadOnlyDependencyContainer dependencies)
+        internal void Load(IReadOnlyDependencyContainer dependencies)
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(ToString(), "Attempting to load an already disposed drawable.");
@@ -227,14 +229,14 @@ namespace osu.Framework.Graphics
 
                     loadState = LoadState.Loading;
 
-                    load(clock, dependencies);
+                    load(dependencies);
 
                     loadState = LoadState.Ready;
                 }
             }
         }
 
-        private void load(IFrameBasedClock clock, IReadOnlyDependencyContainer dependencies)
+        private void load(IReadOnlyDependencyContainer dependencies)
         {
             LoadThread = Thread.CurrentThread;
 
@@ -243,8 +245,6 @@ namespace osu.Framework.Graphics
             double lockDuration = getPerfTime() - t0;
             if (getPerfTime() > 1000 && lockDuration > 50 && ThreadSafety.IsUpdateThread)
                 Logger.Log($@"Drawable [{ToString()}] load was blocked for {lockDuration:0.00}ms!", LoggingTarget.Performance);
-
-            UpdateClock(clock);
 
             double t1 = getPerfTime();
 
@@ -1296,8 +1296,27 @@ namespace osu.Framework.Graphics
 
         #region Timekeeping
 
+        protected IBindableView<IFrameBasedClock> ClockView => clockView;
+
+        [CanBeNull]
         private IFrameBasedClock customClock;
-        private IFrameBasedClock clock;
+
+        [CanBeNull]
+        private IBindableView<IFrameBasedClock> parentClockView;
+
+        [NotNull]
+        private readonly MutableBindable<IBindableView<IFrameBasedClock>> clockChoice;
+
+        [NotNull, Cached(typeof(IBindableView<IFrameBasedClock>))]
+        private readonly IBindableView<IFrameBasedClock> clockView;
+
+        [BackgroundDependencyLoader]
+        private void load(IBindableView<IFrameBasedClock> parentClock)
+        {
+            parentClockView = parentClock;
+            if (customClock == null)
+                clockChoice.Value = parentClock;
+        }
 
         /// <summary>
         /// The clock of this drawable. Used for keeping track of time across
@@ -1307,23 +1326,15 @@ namespace osu.Framework.Graphics
         /// </summary>
         public override IFrameBasedClock Clock
         {
-            get => clock;
+            get => clockView.Value;
             set
             {
+                if (customClock == value) return;
                 customClock = value;
-                UpdateClock(customClock);
+                clockChoice.Value =
+                    customClock != null ? new ReadonlyBindable<IFrameBasedClock>(customClock) :
+                    parentClockView ?? new ReadonlyBindable<IFrameBasedClock>();
             }
-        }
-
-        /// <summary>
-        /// Updates the clock to be used. Has no effect if this drawable
-        /// uses a custom clock.
-        /// </summary>
-        /// <param name="clock">The new clock to be used.</param>
-        internal virtual void UpdateClock(IFrameBasedClock clock)
-        {
-            this.clock = customClock ?? clock;
-            if (scheduler.IsValueCreated) scheduler.Value.UpdateClock(this.clock);
         }
 
         /// <summary>
@@ -1433,14 +1444,6 @@ namespace osu.Framework.Graphics
 
                 parent = value;
                 Invalidate(InvalidationFromParentSize | Invalidation.Colour | Invalidation.Presence);
-
-                if (parent != null)
-                {
-                    //we should already have a clock at this point (from our LoadRequested invocation)
-                    //this just ensures we have the most recent parent clock.
-                    //we may want to consider enforcing that parent.Clock == clock here.
-                    UpdateClock(parent.Clock);
-                }
             }
         }
 
@@ -2165,7 +2168,7 @@ namespace osu.Framework.Graphics
         /// </summary>
         public void Expire(bool calculateLifetimeStart = false)
         {
-            if (clock == null)
+            if (ClockView == null)
             {
                 LifetimeEnd = double.MinValue;
                 return;

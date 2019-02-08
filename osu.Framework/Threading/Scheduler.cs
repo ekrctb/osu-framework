@@ -6,6 +6,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using JetBrains.Annotations;
+using osu.Framework.Bindables;
 using osu.Framework.Extensions;
 using osu.Framework.Timing;
 
@@ -21,61 +23,38 @@ namespace osu.Framework.Threading
         private readonly List<ScheduledDelegate> perUpdateTasks = new List<ScheduledDelegate>();
         private int mainThreadId;
 
-        private IClock clock;
-        private double currentTime => clock?.CurrentTime ?? 0;
+        [NotNull] private IBindableView<IClock> clock;
+        private double currentTime => clock.Value?.CurrentTime ?? 0;
 
         /// <summary>
         /// Whether there are any tasks queued to run (including delayed tasks in the future).
         /// </summary>
         public bool HasPendingTasks => !runQueue.IsEmpty || timedTasks.Count > 0 || perUpdateTasks.Count > 0;
 
+        /// <inheritdoc />
         /// <summary>
         /// The base thread is assumed to be the the thread on which the constructor is run.
         /// </summary>
         public Scheduler()
+            : this(Thread.CurrentThread)
         {
-            SetCurrentThread();
-            clock = new StopwatchClock(true);
         }
 
         /// <summary>
         /// The base thread is assumed to be the the thread on which the constructor is run.
         /// </summary>
         public Scheduler(Thread mainThread)
+            : this(mainThread, new ReadonlyBindable<IClock>(new StopwatchClock(true)))
         {
-            SetCurrentThread(mainThread);
-            clock = new StopwatchClock(true);
         }
 
         /// <summary>
         /// The base thread is assumed to be the the thread on which the constructor is run.
         /// </summary>
-        public Scheduler(Thread mainThread, IClock clock)
+        public Scheduler(Thread mainThread, [NotNull] IBindableView<IClock> clock)
         {
             SetCurrentThread(mainThread);
             this.clock = clock;
-        }
-
-        public void UpdateClock(IClock newClock)
-        {
-            if (newClock == null)
-                throw new NullReferenceException($"{nameof(newClock)} may not be null.");
-
-            if (newClock == clock)
-                return;
-
-            lock (timedTasks)
-            {
-                if (clock == null)
-                {
-                    // This is the first time we will get a valid time, so assume this is the
-                    // reference point everything scheduled so far starts from.
-                    foreach (var s in timedTasks)
-                        s.ExecutionTime += newClock.CurrentTime;
-                }
-
-                clock = newClock;
-            }
         }
 
         /// <summary>

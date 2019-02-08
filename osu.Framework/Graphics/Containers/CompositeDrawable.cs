@@ -15,7 +15,6 @@ using osu.Framework.Extensions.IEnumerableExtensions;
 using osu.Framework.Graphics.Colour;
 using osu.Framework.Allocation;
 using osu.Framework.Graphics.Transforms;
-using osu.Framework.Timing;
 using osu.Framework.Caching;
 using osu.Framework.Threading;
 using osu.Framework.Statistics;
@@ -43,7 +42,7 @@ namespace osu.Framework.Graphics.Containers
         /// </summary>
         protected CompositeDrawable()
         {
-            schedulerAfterChildren = new Lazy<Scheduler>(() => new Scheduler(MainThread, Clock));
+            schedulerAfterChildren = new Lazy<Scheduler>(() => new Scheduler(MainThread, ClockView));
 
             internalChildren = new SortedList<Drawable>(new ChildComparer(this));
             aliveInternalChildren = new SortedList<Drawable>(new ChildComparer(this));
@@ -128,7 +127,7 @@ namespace osu.Framework.Graphics.Containers
             return Task.Factory.StartNew(() =>
             {
                 foreach (var c in components)
-                    c.Load(Clock, deps);
+                    c.Load(deps);
             }, linkedSource.Token, TaskCreationOptions.HideScheduler, threaded_scheduler).ContinueWith(t =>
             {
                 var exception = t.Exception?.AsSingular();
@@ -195,7 +194,7 @@ namespace osu.Framework.Graphics.Containers
                 if (IsDisposed)
                     throw new ObjectDisposedException(ToString(), "Disposed Drawables may not have children added.");
 
-                child.Load(Clock, Dependencies);
+                child.Load(Dependencies);
 
                 child.Parent = this;
             }
@@ -716,18 +715,6 @@ namespace osu.Framework.Graphics.Containers
         {
             drawable.UnbindAllBindables();
             Task.Run(() => drawable.Dispose());
-        }
-
-        internal override void UpdateClock(IFrameBasedClock clock)
-        {
-            if (Clock == clock)
-                return;
-
-            base.UpdateClock(clock);
-            foreach (Drawable child in internalChildren)
-                child.UpdateClock(Clock);
-
-            if (schedulerAfterChildren.IsValueCreated) schedulerAfterChildren.Value.UpdateClock(Clock);
         }
 
         /// <summary>
