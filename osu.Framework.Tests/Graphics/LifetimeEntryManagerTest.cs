@@ -307,6 +307,8 @@ namespace osu.Framework.Tests.Graphics
 
                 Assert.That(isAlive, Is.EqualTo(shouldBeAlive), $"Aliveness is invalid for entry {i}");
             }
+
+            Assert.That(((LifetimeEntryManager)manager).Entries, Is.EquivalentTo(manager.Entries), $"{nameof(LifetimeEntryManager.Entries)} is not correct");
         }
 
         private void checkNoCrossing(LifetimeEntry entry) => Assert.That(manager.Crossings, Does.Not.Contain(entry));
@@ -316,7 +318,7 @@ namespace osu.Framework.Tests.Graphics
 
         private class TestLifetimeEntryManager : LifetimeEntryManager
         {
-            public IReadOnlyList<LifetimeEntry> Entries => entries;
+            public new IReadOnlyList<LifetimeEntry> Entries => entries;
 
             private readonly List<LifetimeEntry> entries = new List<LifetimeEntry>();
 

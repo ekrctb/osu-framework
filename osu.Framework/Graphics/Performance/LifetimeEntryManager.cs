@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using JetBrains.Annotations;
 using osu.Framework.Extensions.ObjectExtensions;
 using osu.Framework.Graphics.Containers;
@@ -34,6 +35,14 @@ namespace osu.Framework.Graphics.Performance
         /// Invoked when a <see cref="LifetimeEntry"/> crosses a lifetime boundary.
         /// </summary>
         public event Action<LifetimeEntry, LifetimeBoundaryKind, LifetimeBoundaryCrossingDirection> EntryCrossedBoundary;
+
+        /// <summary>
+        /// All entries in this <see cref="LifetimeEntryManager"/>.
+        /// </summary>
+        /// <remarks>
+        /// The ordering is undefined.
+        /// </remarks>
+        public IEnumerable<LifetimeEntry> Entries => newEntries.Concat(activeEntries).Concat(futureEntries).Concat(pastEntries);
 
         /// <summary>
         /// Contains all the newly-added (but not yet processed) entries.
