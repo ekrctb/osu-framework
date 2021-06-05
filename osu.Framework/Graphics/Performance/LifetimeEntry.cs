@@ -89,5 +89,7 @@ namespace osu.Framework.Graphics.Performance
         /// Uniquely identifies this <see cref="LifetimeEntry"/> in a <see cref="LifetimeEntryManager"/>.
         /// </summary>
         internal ulong ChildId { get; set; }
+
+        public override string ToString() => $"({LifetimeStart}, {LifetimeEnd}, {State})";
     }
 }
