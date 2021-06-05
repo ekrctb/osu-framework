@@ -13,11 +13,13 @@ namespace osu.Framework.Tests.Graphics
     public class LifetimeEntryManagerTest
     {
         private TestLifetimeEntryManager manager;
+        private bool lifetimeChangeOnCallback;
 
         [SetUp]
         public void Setup()
         {
             manager = new TestLifetimeEntryManager();
+            lifetimeChangeOnCallback = false;
         }
 
         [Test]
@@ -144,6 +146,7 @@ namespace osu.Framework.Tests.Graphics
                 // ReSharper disable once AccessToModifiedClosure - intentional.
                 manager.Update(updateTime);
             };
+            lifetimeChangeOnCallback = true;
 
             manager.Update(updateTime = 0);
 
@@ -199,15 +202,21 @@ namespace osu.Framework.Tests.Graphics
             checkCountAliveAt(-2, 0);
         }
 
-        [Test]
-        public void TestFuzz()
+        [TestCase(false)]
+        [TestCase(true)]
+        public void TestFuzz(bool lifetimeChangeOnCallback)
         {
             var rng = new Random(2222);
             int currentTime = 0;
 
             addEntry();
 
-            manager.EntryCrossedBoundary += (entry, kind, direction) => changeLifetime();
+            if (lifetimeChangeOnCallback)
+            {
+                manager.EntryCrossedBoundary += (entry, kind, direction) => changeLifetime();
+                this.lifetimeChangeOnCallback = true;
+            }
+
             manager.Update(0);
 
             int count = 1;
@@ -297,6 +306,9 @@ namespace osu.Framework.Tests.Graphics
 
         private void checkAlivenessAt(int startTime, int endTime)
         {
+            var nextAliveEntries = manager.GetNextAliveEntries(startTime, endTime).ToArray();
+            var expectedAliveEntries = new List<LifetimeEntry>();
+
             manager.Update(startTime, endTime);
 
             for (int i = 0; i < manager.Entries.Count; i++)
@@ -306,9 +318,16 @@ namespace osu.Framework.Tests.Graphics
                 bool shouldBeAlive = endTime >= entry.LifetimeStart && startTime < entry.LifetimeEnd;
 
                 Assert.That(isAlive, Is.EqualTo(shouldBeAlive), $"Aliveness is invalid for entry {i}");
+
+                if (shouldBeAlive)
+                    expectedAliveEntries.Add(entry);
             }
 
             Assert.That(((LifetimeEntryManager)manager).Entries, Is.EquivalentTo(manager.Entries), $"{nameof(LifetimeEntryManager.Entries)} is not correct");
+
+            // The alive entries computed before update is only valid when no lifetime change occurs on callback.
+            if (!lifetimeChangeOnCallback)
+                Assert.That(nextAliveEntries, Is.EquivalentTo(expectedAliveEntries), $"{nameof(LifetimeEntryManager.GetNextAliveEntries)}({startTime}, {endTime}) is not correct");
         }
 
         private void checkNoCrossing(LifetimeEntry entry) => Assert.That(manager.Crossings, Does.Not.Contain(entry));

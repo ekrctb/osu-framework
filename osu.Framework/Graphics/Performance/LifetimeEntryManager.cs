@@ -281,6 +281,41 @@ namespace osu.Framework.Graphics.Performance
         }
 
         /// <summary>
+        /// Enumerates entries that will be alive (or stay alive) if updated to the given time range.
+        /// The state of the entries is not updated.
+        /// </summary>
+        public IEnumerable<LifetimeEntry> GetNextAliveEntries(double startTime, double endTime)
+        {
+            endTime = Math.Max(endTime, startTime);
+
+            // For newly added entries and currently active entries, all entries are checked.
+            foreach (var entry in newEntries.Where(entry => getState(entry, startTime, endTime) == LifetimeEntryState.Current))
+                yield return entry;
+
+            foreach (var entry in activeEntries.Where(entry => getState(entry, startTime, endTime) == LifetimeEntryState.Current))
+                yield return entry;
+
+            // For future and past entries, the loop can be exited early due to ordering of the entry set.
+            foreach (var entry in futureEntries)
+            {
+                var state = getState(entry, startTime, endTime);
+                if (state == LifetimeEntryState.Future) break;
+
+                if (state == LifetimeEntryState.Current)
+                    yield return entry;
+            }
+
+            foreach (var entry in pastEntries.Reverse())
+            {
+                var state = getState(entry, startTime, endTime);
+                if (state == LifetimeEntryState.Past) break;
+
+                if (state == LifetimeEntryState.Current)
+                    yield return entry;
+            }
+        }
+
+        /// <summary>
         /// Updates the state of a single <see cref="LifetimeEntry"/>.
         /// </summary>
         /// <param name="entry">The <see cref="LifetimeEntry"/> to update.</param>
