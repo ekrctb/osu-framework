@@ -156,6 +156,11 @@ namespace osu.Framework.Platform
         public IEnumerable<GameThread> Threads => threadRunner.Threads;
 
         /// <summary>
+        /// Display what is drawn in the front-to-back pass, and don't draw anything in the back-to-front pass.
+        /// </summary>
+        internal bool VisualizeFrontToBackPass;
+
+        /// <summary>
         /// Register a thread to be monitored and tracked by this <see cref="GameHost"/>
         /// </summary>
         /// <param name="thread">The thread.</param>
@@ -410,7 +415,9 @@ namespace osu.Framework.Platform
                     {
                         depthValue.Reset();
 
-                        GL.ColorMask(false, false, false, false);
+                        if (!VisualizeFrontToBackPass)
+                            GL.ColorMask(false, false, false, false);
+
                         GLWrapper.SetBlend(BlendingParameters.None);
                         GLWrapper.PushDepthInfo(DepthInfo.Default);
 
@@ -430,7 +437,8 @@ namespace osu.Framework.Platform
                     }
 
                     // Back pass
-                    buffer.Object.Draw(null);
+                    if (!VisualizeFrontToBackPass)
+                        buffer.Object.Draw(null);
 
                     GLWrapper.PopDepthInfo();
 

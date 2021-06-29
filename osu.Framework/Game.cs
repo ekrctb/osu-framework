@@ -334,6 +334,10 @@ namespace osu.Framework
 
                     executionMode.Value = nextExecutionMode;
                     break;
+
+                case FrameworkAction.ToggleFrontToBackVisualization:
+                    Host.VisualizeFrontToBackPass = !Host.VisualizeFrontToBackPass;
+                    break;
             }
 
             return false;

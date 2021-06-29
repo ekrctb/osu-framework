@@ -15,10 +15,11 @@ namespace osu.Framework.Input
             new KeyBinding(new[] { InputKey.Control, InputKey.F3 }, FrameworkAction.ToggleAtlasVisualiser),
             new KeyBinding(new[] { InputKey.Control, InputKey.F7 }, FrameworkAction.CycleFrameSync),
             new KeyBinding(new[] { InputKey.Control, InputKey.Alt, InputKey.F7 }, FrameworkAction.CycleExecutionMode),
+            new KeyBinding(new[] { InputKey.Shift, InputKey.Alt, InputKey.F8 }, FrameworkAction.ToggleFrontToBackVisualization),
             new KeyBinding(new[] { InputKey.Control, InputKey.F11 }, FrameworkAction.CycleFrameStatistics),
             new KeyBinding(new[] { InputKey.Control, InputKey.F10 }, FrameworkAction.ToggleLogOverlay),
             new KeyBinding(new[] { InputKey.Alt, InputKey.Enter }, FrameworkAction.ToggleFullscreen),
-            new KeyBinding(new[] { InputKey.F11 }, FrameworkAction.ToggleFullscreen)
+            new KeyBinding(new[] { InputKey.F11 }, FrameworkAction.ToggleFullscreen),
         };
 
         public FrameworkActionContainer()
@@ -38,6 +39,7 @@ namespace osu.Framework.Input
         ToggleLogOverlay,
         ToggleFullscreen,
         CycleFrameSync,
-        CycleExecutionMode
+        CycleExecutionMode,
+        ToggleFrontToBackVisualization
     }
 }
